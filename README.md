@@ -1,0 +1,1 @@
+# SMCollection-Jellyfin
