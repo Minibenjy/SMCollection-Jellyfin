@@ -1,3 +1,6 @@
+<img width="1376" height="768" alt="Gemini_Generated_Image_gtppuggtppuggtpp" src="https://github.com/user-attachments/assets/c321673b-1615-4794-9321-ea7f9d8a5f42" />
+
+
 # SMCollection for Jellyfin
 
 Five plugins for Jellyfin 10.11, installable as a single repository: a
