@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore
+        run: dotnet restore JellyfinPlugins.sln
+
+      # Warnings are the review signal in this repository: the build is kept clean so
+      # that a new one is visible instead of buried. Failing here keeps it that way.
+      - name: Build
+        run: dotnet build JellyfinPlugins.sln -c Release --no-restore -warnaserror
+
+      - name: Test harness (AI Assistant provider wire format)
+        run: dotnet run --project tests/Jellyfin.Plugin.AiAssistant.TestHarness -c Release --no-build
+
+      - name: Package
+        run: ./build.sh
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugins
+          path: artifacts/*.zip
+          retention-days: 14

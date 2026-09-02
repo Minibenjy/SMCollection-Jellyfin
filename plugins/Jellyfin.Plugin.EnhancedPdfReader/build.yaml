@@ -1,0 +1,19 @@
+---
+name: "Enhanced PDF Reader"
+guid: "b1f4a1c0-2e6d-4c9a-9f2a-7d3e5c8b1a90"
+version: "1.0.0.0"
+targetAbi: "10.11.0.0"
+framework: "net9.0"
+owner: "Minibenjy"
+category: "General"
+overview: "A real PDF reader for the Jellyfin web client."
+description: >
+  Replaces the minimal built-in PDF viewer with a full reader: continuous
+  scroll with lazy rendering, zoom and fit modes, go-to-page, rotate, and a
+  page-flip book mode. Reading position is stored per user on the server and
+  feeds Jellyfin's own Continue Reading row.
+artifacts:
+  - "Jellyfin.Plugin.EnhancedPdfReader.dll"
+changelog: "See CHANGELOG.md in the repository."
+repositoryUrl: "https://github.com/Minibenjy/SMCollection-Jellyfin"
+---

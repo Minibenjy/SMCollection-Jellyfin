@@ -1,0 +1,97 @@
+[
+  {
+    "guid": "b41b7b06-6a1d-4f2c-9a63-1f0e5c7d8a24",
+    "name": "AI Assistant",
+    "description": "Adds a conversational assistant to the Jellyfin web client. Each user routes their own AI provider, and the assistant acts strictly inside that user's own library permissions: it can search, recommend from real metadata, build and edit playlists, and mark things watched, but only ever as the person talking to it.",
+    "overview": "Bring-your-own-provider AI assistant for your library.",
+    "owner": "Minibenjy",
+    "category": "General",
+    "imageUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/raw/main/docs/icons/Jellyfin.Plugin.AiAssistant.png",
+    "versions": [
+      {
+        "version": "0.1.0.0",
+        "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v0.1.0.0/Jellyfin.Plugin.AiAssistant_0.1.0.0.zip",
+        "checksum": "803be6bbcb0d16dc804c05652dc40f82",
+        "timestamp": "2026-09-02T15:35:36Z"
+      }
+    ]
+  },
+  {
+    "guid": "7c2b9e14-5a83-4d6f-9b21-3e8f4a0c6d75",
+    "name": "Auto Thumbnails",
+    "description": "Generates a thumbnail for items no scraper covered: the first page of a CBZ, CBR, CB7, CBT, PDF or EPUB, a video frame via ffmpeg, or the first child's image for a series, season or collection. Never overwrites artwork that already exists.",
+    "overview": "Thumbnails for anything that has none, taken from the content itself.",
+    "owner": "Minibenjy",
+    "category": "Metadata",
+    "imageUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/raw/main/docs/icons/Jellyfin.Plugin.AutoThumbnails.png",
+    "versions": [
+      {
+        "version": "1.0.0.0",
+        "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.0.0.0/Jellyfin.Plugin.AutoThumbnails_1.0.0.0.zip",
+        "checksum": "7455d5bc7cd575c62e0cd0e04dcda647",
+        "timestamp": "2026-09-02T15:35:36Z"
+      }
+    ]
+  },
+  {
+    "guid": "b1f4a1c0-2e6d-4c9a-9f2a-7d3e5c8b1a90",
+    "name": "Enhanced PDF Reader",
+    "description": "Replaces the minimal built-in PDF viewer with a full reader: continuous scroll with lazy rendering, zoom and fit modes, go-to-page, rotate, and a page-flip book mode. Reading position is stored per user on the server and feeds Jellyfin's own Continue Reading row.",
+    "overview": "A real PDF reader for the Jellyfin web client.",
+    "owner": "Minibenjy",
+    "category": "General",
+    "imageUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/raw/main/docs/icons/Jellyfin.Plugin.EnhancedPdfReader.png",
+    "versions": [
+      {
+        "version": "1.0.0.0",
+        "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.0.0.0/Jellyfin.Plugin.EnhancedPdfReader_1.0.0.0.zip",
+        "checksum": "58a7c88d6886cf90976d7c81c0e6c9a8",
+        "timestamp": "2026-09-02T15:35:36Z"
+      }
+    ]
+  },
+  {
+    "guid": "f287bf82-3886-47fa-a23c-1d7b562dd1f3",
+    "name": "Kids Mode",
+    "description": "Turns any account into a restricted, kid-safe view with one toggle. Works as an allow-list on top of Jellyfin's own user policy, keeps a per-account override list, and restores the previous policy exactly when switched off.",
+    "overview": "A per-account allow-list mode that shows only what you approve.",
+    "owner": "Minibenjy",
+    "category": "General",
+    "imageUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/raw/main/docs/icons/Jellyfin.Plugin.KidsMode.png",
+    "versions": [
+      {
+        "version": "0.1.0.0",
+        "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v0.1.0.0/Jellyfin.Plugin.KidsMode_0.1.0.0.zip",
+        "checksum": "6f472c09f9638d4311acf697baa259ef",
+        "timestamp": "2026-09-02T15:35:36Z"
+      }
+    ]
+  },
+  {
+    "guid": "0fd6a7ab-5519-4aa3-9fd0-bd3f93c1b1f4",
+    "name": "Mature Content",
+    "description": "Marks items, folders or whole libraries as mature using Jellyfin's native tags, then hides them through the user's own BlockedTags policy. A topbar toggle flips visibility for whoever is allowed to use it; a durable history re-applies the marks after a metadata refresh.",
+    "overview": "Hide or reveal adult content with a single toggle.",
+    "owner": "Minibenjy",
+    "category": "General",
+    "imageUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/raw/main/docs/icons/Jellyfin.Plugin.MatureContent.png",
+    "versions": [
+      {
+        "version": "0.1.0.0",
+        "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v0.1.0.0/Jellyfin.Plugin.MatureContent_0.1.0.0.zip",
+        "checksum": "ae81eeaa5384dab60f569276e6001620",
+        "timestamp": "2026-09-02T15:35:36Z"
+      }
+    ]
+  }
+]

@@ -1,0 +1,39 @@
+<Project>
+
+  <!--
+    Settings every project in this repository shares. Anything a single plugin
+    needs on its own — its assembly name, its version, its NuGet dependencies —
+    stays in that plugin's own .csproj.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>latestmajor</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+
+    <!-- Reproducible output, so a release artifact can be checked against a rebuild. -->
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+
+    <!--
+      The single place the Jellyfin version is written down. JellyfinControllerVersion
+      is the NuGet package every plugin compiles against; TargetAbi is what the server
+      checks a plugin against at load time and what goes into manifest.json. Bumping
+      Jellyfin means editing these two lines and nothing else.
+    -->
+    <JellyfinControllerVersion>10.11.11</JellyfinControllerVersion>
+    <TargetAbi>10.11.0.0</TargetAbi>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Authors>Sergio Morales</Authors>
+    <Company>jellyfin-plugins contributors</Company>
+    <Copyright>Copyright (c) jellyfin-plugins contributors</Copyright>
+    <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+</Project>

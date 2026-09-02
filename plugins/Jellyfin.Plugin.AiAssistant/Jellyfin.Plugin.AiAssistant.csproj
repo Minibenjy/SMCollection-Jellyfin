@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Jellyfin.Plugin.AiAssistant</RootNamespace>
+    <AssemblyName>Jellyfin.Plugin.AiAssistant</AssemblyName>
+    <Version>0.1.0.0</Version>
+    <FileVersion>0.1.0.0</FileVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Jellyfin.Controller" Version="$(JellyfinControllerVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Configuration\configPage.html" />
+    <EmbeddedResource Include="Web\aiAssistant.js" />
+  </ItemGroup>
+
+</Project>

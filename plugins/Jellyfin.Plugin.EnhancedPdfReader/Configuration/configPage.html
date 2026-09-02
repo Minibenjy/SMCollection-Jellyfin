@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enhanced PDF Reader</title>
+</head>
+<body>
+<div id="EnhancedPdfReaderConfigPage" data-role="page" class="page type-interior pluginConfigurationPage"
+     data-controller="__plugin/EnhancedPdfReaderConfig.js">
+    <div data-role="content">
+        <div class="content-primary">
+            <form id="EnhancedPdfReaderConfigForm">
+                <div class="verticalSection">
+                    <h2 class="sectionTitle">Enhanced PDF Reader</h2>
+                    <p>
+                        Replaces the basic PDF viewer in the web client with a full reader: continuous
+                        scroll, zoom, fit width / fit page, go to page, rotate, and keyboard
+                        (arrows, +/-, w, p, r) and touch navigation.
+                    </p>
+                </div>
+
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label class="emby-checkbox-label">
+                        <input is="emby-checkbox" type="checkbox" id="InjectClientScript" />
+                        <span>Inyectar el lector en el cliente web</span>
+                    </label>
+                    <div class="fieldDescription">
+                        Turn this off and restart, and the next web client load goes back to the original viewer.
+                    </div>
+                </div>
+
+                <div class="selectContainer">
+                    <label class="selectLabel" for="DefaultZoomMode">Zoom por defecto</label>
+                    <select is="emby-select" id="DefaultZoomMode">
+                        <option value="fit-width">Ajustar al ancho</option>
+                        <option value="fit-page">Fit page</option>
+                        <option value="100">100%</option>
+                    </select>
+                </div>
+
+                <div>
+                    <button is="emby-button" type="submit" class="raised button-submit block">
+                        <span>Guardar</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        (function () {
+            var pluginId = 'b1f4a1c0-2e6d-4c9a-9f2a-7d3e5c8b1a90';
+            document.querySelector('#EnhancedPdfReaderConfigPage').addEventListener('pageshow', function () {
+                Dashboard.showLoadingMsg();
+                ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                    document.querySelector('#InjectClientScript').checked = config.InjectClientScript;
+                    document.querySelector('#DefaultZoomMode').value = config.DefaultZoomMode || 'fit-width';
+                    Dashboard.hideLoadingMsg();
+                });
+            });
+            document.querySelector('#EnhancedPdfReaderConfigForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                Dashboard.showLoadingMsg();
+                ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                    config.InjectClientScript = document.querySelector('#InjectClientScript').checked;
+                    config.DefaultZoomMode = document.querySelector('#DefaultZoomMode').value;
+                    ApiClient.updatePluginConfiguration(pluginId, config).then(function (r) {
+                        Dashboard.processPluginConfigurationUpdateResult(r);
+                    });
+                });
+                return false;
+            });
+        })();
+    </script>
+</div>
+</body>
+</html>

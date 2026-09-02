@@ -1,0 +1,61 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g. v1.0.0)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build, publish and refresh the manifest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Resolve tag
+        id: tag
+        run: echo "value=${{ github.event.inputs.tag || github.ref_name }}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and package
+        env:
+          RELEASE_TAG: ${{ steps.tag.outputs.value }}
+        run: ./build.sh
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.value }}
+          name: ${{ steps.tag.outputs.value }}
+          body_path: CHANGELOG.md
+          files: artifacts/*.zip
+          draft: false
+
+      # The manifest has to point at URLs that exist and carry the checksum of the
+      # artifact actually published, so it is regenerated after the release and
+      # committed back. A manifest written before the upload would be wrong on both.
+      - name: Commit refreshed manifest
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- manifest.json; then
+            echo "manifest.json unchanged"
+          else
+            git add manifest.json
+            git commit -m "Update manifest for ${{ steps.tag.outputs.value }}"
+            git push origin HEAD:main
+          fi

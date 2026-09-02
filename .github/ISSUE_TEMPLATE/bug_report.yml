@@ -1,0 +1,43 @@
+name: Bug report
+description: Something in one of the plugins does not work
+labels: [bug]
+body:
+  - type: dropdown
+    id: plugin
+    attributes:
+      label: Plugin
+      options:
+        - AI Assistant
+        - Auto Thumbnails
+        - Enhanced PDF Reader
+        - Kids Mode
+        - Mature Content
+        - The repository / manifest itself
+    validations: {required: true}
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Jellyfin version and plugin version
+      placeholder: "Jellyfin 10.11.11, Auto Thumbnails 1.0.0.0"
+    validations: {required: true}
+  - type: input
+    id: platform
+    attributes:
+      label: How Jellyfin runs
+      placeholder: "Docker on Debian 12, x64"
+    validations: {required: true}
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, what you got instead.
+    validations: {required: true}
+  - type: textarea
+    id: logs
+    attributes:
+      label: Server log
+      description: >
+        Dashboard → Logs, or <config>/log/log_*.log. Plugin lines are prefixed with
+        Jellyfin.Plugin.<Name>. Please redact paths, keys and other users' names.
+      render: text

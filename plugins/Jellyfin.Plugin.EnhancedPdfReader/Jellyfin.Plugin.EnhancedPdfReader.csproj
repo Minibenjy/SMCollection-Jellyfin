@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Jellyfin.Plugin.EnhancedPdfReader</RootNamespace>
+    <AssemblyName>Jellyfin.Plugin.EnhancedPdfReader</AssemblyName>
+    <Version>1.0.0.0</Version>
+    <FileVersion>1.0.0.0</FileVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Jellyfin.Controller" Version="$(JellyfinControllerVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Web\enhancedPdfReader.js" />
+    <EmbeddedResource Include="Web\pdf.min.mjs" />
+    <EmbeddedResource Include="Web\pdf.worker.min.mjs" />
+    <EmbeddedResource Include="Web\page-flip.browser.js" />
+    <EmbeddedResource Include="Configuration\configPage.html" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auto Thumbnails</title>
+</head>
+<body>
+<div id="AutoThumbnailsPage" data-role="page" class="page type-interior pluginConfigurationPage">
+    <style>
+        #AutoThumbnailsPage .atCard {
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: .5em;
+            padding: 1.25em 1.5em;
+            margin-bottom: 1.75em;
+        }
+        #AutoThumbnailsPage .atLead { opacity: .85; line-height: 1.5; }
+        #AutoThumbnailsPage .atGrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(15em, 1fr));
+            gap: 0 1.5em;
+        }
+        #AutoThumbnailsPage .atBar {
+            height: .55em;
+            border-radius: .3em;
+            background: rgba(255, 255, 255, .12);
+            overflow: hidden;
+            margin: .9em 0 .6em;
+        }
+        #AutoThumbnailsPage .atBarFill {
+            height: 100%;
+            width: 0;
+            border-radius: .3em;
+            background: #00a4dc;
+            transition: width .3s ease;
+        }
+        #AutoThumbnailsPage .atBarFill.atDone { background: #4caf50; }
+        #AutoThumbnailsPage .atBarFill.atFail { background: #d32f2f; }
+        #AutoThumbnailsPage .atStats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5em;
+            margin-bottom: .5em;
+        }
+        #AutoThumbnailsPage .atStat { min-width: 5em; }
+        #AutoThumbnailsPage .atStatValue { font-size: 1.5em; font-weight: 500; line-height: 1.2; }
+        #AutoThumbnailsPage .atStatLabel { font-size: .82em; opacity: .6; text-transform: uppercase; letter-spacing: .04em; }
+        #AutoThumbnailsPage .atPhase { opacity: .7; font-size: .92em; min-height: 1.3em; }
+        #AutoThumbnailsPage .atLog {
+            font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+            font-size: .8em;
+            line-height: 1.55;
+            background: rgba(0, 0, 0, .35);
+            border-radius: .4em;
+            padding: .75em 1em;
+            height: 21em;
+            overflow-y: auto;
+            overflow-x: hidden;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        #AutoThumbnailsPage .atLog:empty::after {
+            content: "No activity yet.";
+            opacity: .4;
+            font-style: italic;
+        }
+        #AutoThumbnailsPage .atLine { display: flex; gap: .75em; }
+        #AutoThumbnailsPage .atTime { opacity: .35; flex: none; }
+        #AutoThumbnailsPage .atMsg { flex: 1 1 auto; }
+        #AutoThumbnailsPage .atOk    .atMsg { color: #7ddc8a; }
+        #AutoThumbnailsPage .atSkip  .atMsg { color: #e0b050; }
+        #AutoThumbnailsPage .atError .atMsg { color: #f2726f; }
+        #AutoThumbnailsPage .atInfo  .atMsg { opacity: .75; }
+        #AutoThumbnailsPage .atLibs {
+            max-height: 13em;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: .4em;
+            padding: .35em .9em;
+        }
+        #AutoThumbnailsPage .atActions { display: flex; flex-wrap: wrap; gap: .75em; align-items: center; }
+        #AutoThumbnailsPage .atActions .emby-button { margin: 0; }
+        #AutoThumbnailsPage .atWarn {
+            border-left: 3px solid #e0b050;
+            padding-left: .9em;
+            opacity: .85;
+            font-size: .92em;
+            margin: .5em 0 1em;
+        }
+    </style>
+
+    <div data-role="content">
+        <div class="content-primary">
+
+            <div class="verticalSection">
+                <h2 class="sectionTitle">Auto Thumbnails</h2>
+                <p class="atLead">
+                    Gives a thumbnail to anything that does not have one, taken from the content
+                    itself: page 0 of a comic, book or PDF, a frame from a video, or the first
+                    child's image for series, seasons and collections.
+                    Existing artwork is left alone unless you ask for a regenerate.
+                </p>
+            </div>
+
+            <!-- ============ Regenerar ============ -->
+            <div class="verticalSection">
+                <h2 class="sectionTitle">Regenerate thumbnails</h2>
+                <div class="atCard">
+
+                    <div class="atStats">
+                        <div class="atStat">
+                            <div class="atStatValue" id="atProcessed">0</div>
+                            <div class="atStatLabel">of <span id="atTotal">0</span></div>
+                        </div>
+                        <div class="atStat">
+                            <div class="atStatValue" id="atCreated" style="color:#7ddc8a">0</div>
+                            <div class="atStatLabel">created</div>
+                        </div>
+                        <div class="atStat">
+                            <div class="atStatValue" id="atSkipped" style="color:#e0b050">0</div>
+                            <div class="atStatLabel">no page</div>
+                        </div>
+                        <div class="atStat">
+                            <div class="atStatValue" id="atFailed" style="color:#f2726f">0</div>
+                            <div class="atStatLabel">failed</div>
+                        </div>
+                    </div>
+
+                    <div class="atBar"><div class="atBarFill" id="atBarFill"></div></div>
+                    <div class="atPhase" id="atPhase"></div>
+
+                    <div class="atLog" id="atLog"></div>
+
+                    <div class="atActions" style="margin-top:1.25em">
+                        <button is="emby-button" type="button" id="atStart" class="raised button-submit">
+                            <span>Start</span>
+                        </button>
+                        <button is="emby-button" type="button" id="atCancel" class="raised" disabled>
+                            <span>Cancelar</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="atCard">
+                    <h3 style="margin-top:0">What to process</h3>
+
+                    <div class="selectContainer">
+                        <label class="selectLabel" for="atScope">Scope</label>
+                        <select is="emby-select" id="atScope">
+                            <option value="missing">Only items with no thumbnail</option>
+                            <option value="all">Everything — regenerate existing thumbnails</option>
+                        </select>
+                    </div>
+
+                    <div class="atWarn" id="atScopeWarning" style="display:none">
+                        Regenerating also replaces artwork that came from Comic Vine, TheMovieDb or any
+                        other scraper with page 0 of the file. It cannot be undone without running
+                        the scraper again.
+                    </div>
+
+                    <div class="atGrid">
+                        <div class="checkboxContainer">
+                            <label class="emby-checkbox-label">
+                                <input is="emby-checkbox" type="checkbox" id="atBooks" checked />
+                                <span>Books, comics and magazines</span>
+                            </label>
+                        </div>
+                        <div class="checkboxContainer">
+                            <label class="emby-checkbox-label">
+                                <input is="emby-checkbox" type="checkbox" id="atVideos" checked />
+                                <span>Movies and episodes</span>
+                            </label>
+                        </div>
+                        <div class="checkboxContainer">
+                            <label class="emby-checkbox-label">
+                                <input is="emby-checkbox" type="checkbox" id="atFolders" checked />
+                                <span>Series and collections</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <h3>Libraries</h3>
+                    <div class="fieldDescription" style="margin-bottom:.6em">
+                        With none selected, all of them are processed.
+                    </div>
+                    <div class="atLibs" id="atLibs"></div>
+                </div>
+            </div>
+
+            <!-- ============ Ajustes ============ -->
+            <div class="verticalSection">
+                <h2 class="sectionTitle">Settings</h2>
+                <form id="atForm" class="atCard">
+
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input is="emby-checkbox" type="checkbox" id="EnableBooks" />
+                            <span>Books, comics and magazines</span>
+                        </label>
+                        <div class="fieldDescription">cbz, cbr, cb7, cbt, pdf and epub. Applied during library scans.</div>
+                    </div>
+
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input is="emby-checkbox" type="checkbox" id="EnableVideos" />
+                            <span>Movies and episodes</span>
+                        </label>
+                        <div class="fieldDescription">Extracts a frame with ffmpeg.</div>
+                    </div>
+
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input is="emby-checkbox" type="checkbox" id="EnableFolderInheritance" />
+                            <span>Series, seasons and collections</span>
+                        </label>
+                        <div class="fieldDescription">Inherit the image of the first child that has one.</div>
+                    </div>
+
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input is="emby-checkbox" type="checkbox" id="OverwriteExisting" />
+                            <span>The scheduled task also regenerates existing thumbnails</span>
+                        </label>
+                        <div class="fieldDescription">
+                            Off by default: the daily task only fills in gaps.
+                        </div>
+                    </div>
+
+                    <div class="atGrid">
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="PageIndex">Page</label>
+                            <input is="emby-input" type="number" id="PageIndex" min="0" step="1" />
+                            <div class="fieldDescription">0 is the first page. Raise it if your scans start with a blank sheet.</div>
+                        </div>
+
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="VideoFrameSeconds">Frame second</label>
+                            <input is="emby-input" type="number" id="VideoFrameSeconds" min="0" step="1" />
+                            <div class="fieldDescription">0 is the first frame. Note that many videos open on black or a logo.</div>
+                        </div>
+
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="MaxDimension">Longest side (px)</label>
+                            <input is="emby-input" type="number" id="MaxDimension" min="200" max="4000" step="10" />
+                            <div class="fieldDescription">Render resolution for a PDF page.</div>
+                        </div>
+
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="JpegQuality">JPEG quality</label>
+                            <input is="emby-input" type="number" id="JpegQuality" min="1" max="100" step="1" />
+                        </div>
+                    </div>
+
+                    <button is="emby-button" type="submit" class="raised button-submit block">
+                        <span>Guardar</span>
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        (function () {
+            var pluginId = '7c2b9e14-5a83-4d6f-9b21-3e8f4a0c6d75';
+            var page = document.querySelector('#AutoThumbnailsPage');
+            var checkboxes = ['EnableBooks', 'EnableVideos', 'EnableFolderInheritance', 'OverwriteExisting'];
+            var numbers = ['PageIndex', 'VideoFrameSeconds', 'MaxDimension', 'JpegQuality'];
+            var since = 0;
+            var timer = null;
+
+            function $(id) { return page.querySelector('#' + id); }
+
+            function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+            function renderLog(entries) {
+                if (!entries || !entries.length) { return; }
+                var log = $('atLog');
+                var stuck = log.scrollTop + log.clientHeight >= log.scrollHeight - 24;
+                var frag = document.createDocumentFragment();
+
+                entries.forEach(function (e) {
+                    var d = new Date(e.Timestamp);
+                    var line = document.createElement('div');
+                    line.className = 'atLine at' + e.Level.charAt(0).toUpperCase() + e.Level.slice(1);
+
+                    var time = document.createElement('span');
+                    time.className = 'atTime';
+                    time.textContent = pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+
+                    var msg = document.createElement('span');
+                    msg.className = 'atMsg';
+                    msg.textContent = e.Message;
+
+                    line.appendChild(time);
+                    line.appendChild(msg);
+                    frag.appendChild(line);
+                    since = Math.max(since, e.Sequence);
+                });
+
+                log.appendChild(frag);
+                while (log.childElementCount > 600) { log.removeChild(log.firstElementChild); }
+                if (stuck) { log.scrollTop = log.scrollHeight; }
+            }
+
+            function render(status) {
+                $('atProcessed').textContent = status.Processed;
+                $('atTotal').textContent = status.Total;
+                $('atCreated').textContent = status.Created;
+                $('atSkipped').textContent = status.Skipped;
+                $('atFailed').textContent = status.Failed;
+
+                var fill = $('atBarFill');
+                fill.style.width = (status.Percent || 0).toFixed(1) + '%';
+                fill.classList.toggle('atDone', status.State === 'completed');
+                fill.classList.toggle('atFail', status.State === 'failed' || status.State === 'cancelled');
+
+                var running = status.State === 'running' || status.State === 'cancelling';
+                $('atStart').disabled = running;
+                $('atCancel').disabled = !running;
+
+                var labels = {
+                    idle: '', running: status.Phase, cancelling: 'Cancelando…',
+                    completed: 'Completado', cancelled: 'Cancelado', failed: 'Ha fallado'
+                };
+                $('atPhase').textContent = labels[status.State] || '';
+
+                renderLog(status.Log);
+
+                if (running && !timer) { timer = setInterval(poll, 1000); }
+                if (!running && timer) { clearInterval(timer); timer = null; }
+            }
+
+            function poll() {
+                ApiClient.getJSON(ApiClient.getUrl('AutoThumbnails/Status', { since: since }))
+                    .then(render)
+                    .catch(function () { /* the dashboard was left; the next poll recovers */ });
+            }
+
+            function loadLibraries() {
+                ApiClient.getJSON(ApiClient.getUrl('AutoThumbnails/Libraries')).then(function (libs) {
+                    var host = $('atLibs');
+                    host.innerHTML = '';
+                    if (!libs.length) {
+                        host.textContent = 'No hay bibliotecas.';
+                        return;
+                    }
+                    libs.forEach(function (lib) {
+                        var wrap = document.createElement('div');
+                        wrap.className = 'checkboxContainer';
+                        var label = document.createElement('label');
+                        label.className = 'emby-checkbox-label';
+                        var input = document.createElement('input');
+                        input.setAttribute('is', 'emby-checkbox');
+                        input.type = 'checkbox';
+                        input.className = 'atLib';
+                        input.value = lib.Id;
+                        var span = document.createElement('span');
+                        span.textContent = lib.Name;
+                        label.appendChild(input);
+                        label.appendChild(span);
+                        wrap.appendChild(label);
+                        host.appendChild(wrap);
+                    });
+                });
+            }
+
+            function start() {
+                var regenerate = $('atScope').value === 'all';
+                if (regenerate && !confirm('This will regenerate ALL selected thumbnails, including those that already came from a scraper. Continue?')) {
+                    return;
+                }
+
+                var body = {
+                    Books: $('atBooks').checked,
+                    Videos: $('atVideos').checked,
+                    Folders: $('atFolders').checked,
+                    Regenerate: regenerate,
+                    LibraryIds: Array.prototype.map.call(page.querySelectorAll('.atLib:checked'), function (c) { return c.value; })
+                };
+
+                if (!body.Books && !body.Videos && !body.Folders) {
+                    Dashboard.alert('Select at least one content type.');
+                    return;
+                }
+
+                $('atStart').disabled = true;
+                $('atLog').innerHTML = '';
+                since = 0;
+
+                ApiClient.ajax({
+                    type: 'POST',
+                    url: ApiClient.getUrl('AutoThumbnails/Start'),
+                    data: JSON.stringify(body),
+                    contentType: 'application/json',
+                    dataType: 'json'
+                }).then(function (status) {
+                    render(status);
+                    if (!timer) { timer = setInterval(poll, 1000); }
+                }).catch(function () {
+                    $('atStart').disabled = false;
+                    Dashboard.alert('Ya hay un proceso en marcha.');
+                });
+            }
+
+            page.addEventListener('pageshow', function () {
+                Dashboard.showLoadingMsg();
+                $('atLog').innerHTML = '';
+                since = 0;
+                loadLibraries();
+                ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                    checkboxes.forEach(function (id) { $(id).checked = !!config[id]; });
+                    numbers.forEach(function (id) { $(id).value = config[id]; });
+                    Dashboard.hideLoadingMsg();
+                });
+                poll();
+            });
+
+            page.addEventListener('pagehide', function () {
+                if (timer) { clearInterval(timer); timer = null; }
+            });
+
+            $('atScope').addEventListener('change', function () {
+                $('atScopeWarning').style.display = this.value === 'all' ? 'block' : 'none';
+            });
+
+            $('atStart').addEventListener('click', start);
+
+            $('atCancel').addEventListener('click', function () {
+                $('atCancel').disabled = true;
+                ApiClient.ajax({ type: 'POST', url: ApiClient.getUrl('AutoThumbnails/Cancel') });
+            });
+
+            $('atForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                Dashboard.showLoadingMsg();
+                ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                    checkboxes.forEach(function (id) { config[id] = $(id).checked; });
+                    numbers.forEach(function (id) { config[id] = parseInt($(id).value, 10) || 0; });
+                    ApiClient.updatePluginConfiguration(pluginId, config).then(function (result) {
+                        Dashboard.processPluginConfigurationUpdateResult(result);
+                    });
+                });
+                return false;
+            });
+        })();
+    </script>
+</div>
+</body>
+</html>

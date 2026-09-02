@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kids Mode</title>
+    <style>
+        .kd-shell { max-width: 1000px; }
+        .kd-note { color: var(--theme-text-secondary-color, #aaa); line-height: 1.45; margin: .35rem 0 1rem; }
+        .kd-band { border: 1px solid rgba(128,128,128,.28); border-radius: 8px; padding: 1rem 1.1rem; margin: 1rem 0; background: rgba(128,128,128,.06); }
+        .kd-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: .6rem 1rem; }
+        .kd-users { width: 100%; border-collapse: collapse; margin-top: .5rem; }
+        .kd-users th, .kd-users td { text-align: left; padding: .6rem .5rem; border-bottom: 1px solid rgba(128,128,128,.2); vertical-align: middle; }
+        .kd-users th { color: var(--theme-text-secondary-color, #aaa); font-weight: 600; font-size: .82rem; }
+        .kd-uname { display: flex; align-items: center; gap: .5rem; }
+        .kd-uname .material-icons { color: #37d67a; font-size: 1.3rem; }
+        .kd-pill { display: inline-flex; align-items: center; height: 22px; border-radius: 5px; padding: 0 .45rem; background: rgba(128,128,128,.22); font-size: .78rem; }
+        .kd-pill.on { background: #05270f; color: #5ee29a; box-shadow: inset 0 0 0 1px rgba(94,226,154,.5); }
+        .kd-actions { display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; margin-top: 1rem; }
+        .kd-toolbar { display: flex; gap: .6rem; align-items: flex-end; flex-wrap: wrap; margin: .6rem 0; }
+        .kd-toolbar .inputContainer { flex: 1 1 240px; margin: 0; }
+        .kd-list { display: grid; gap: .4rem; margin-top: .7rem; max-height: 440px; overflow: auto; padding-right: .2rem; }
+        .kd-row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: .75rem; align-items: center; padding: .55rem .7rem; border: 1px solid rgba(128,128,128,.22); border-radius: 7px; background: rgba(128,128,128,.05); }
+        .kd-row.gone { opacity: .55; }
+        .kd-row-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .kd-row-meta { color: var(--theme-text-secondary-color, #aaa); font-size: .8rem; margin-top: .1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .kd-src { font-size: .72rem; margin-left: .4rem; padding: 1px 5px; border-radius: 4px; background: rgba(128,128,128,.25); }
+        .kd-src.added { background: #05270f; color: #5ee29a; }
+        .kd-src.removed { background: #2c0d0d; color: #ff8a8a; }
+        .kd-empty { color: var(--theme-text-secondary-color, #aaa); padding: .7rem 0; }
+        .kd-count { font-size: .82rem; color: var(--theme-text-secondary-color, #aaa); margin-left: .4rem; }
+        .kd-msg { margin-top: .5rem; font-size: .85rem; }
+        .kd-linkbtn { background: none; border: 0; color: #00a4dc; cursor: pointer; font: inherit; padding: 0; }
+        @media (max-width: 800px) {
+            .kd-users, .kd-users tbody, .kd-users tr, .kd-users td { display: block; width: 100%; }
+            .kd-users thead { display: none; }
+            .kd-users tr { border-bottom: 1px solid rgba(128,128,128,.3); padding: .5rem 0; }
+            .kd-users td { border: 0; padding: .35rem 0; }
+            .kd-users td::before { content: attr(data-label); display: block; color: var(--theme-text-secondary-color, #aaa); font-size: .76rem; margin-bottom: .2rem; }
+        }
+    </style>
+</head>
+<body>
+<div id="KidsModeConfigPage" data-role="page" class="page type-interior pluginConfigurationPage">
+    <div data-role="content">
+        <div class="content-primary kd-shell">
+            <form id="KidsModeConfigForm">
+                <div class="verticalSection">
+                    <h2 class="sectionTitle">Kids Mode</h2>
+                    <p class="kd-note">
+                        Kids Mode is a <strong>per-account allow-list</strong>: while it is on, the account
+                        <strong>sees only the content added to kids</strong> (and the libraries holding it), nothing else.
+                        There is a global list an administrator curates and, on top of it, each account can add or remove
+                        items for itself (an override). All of it is durable and re-applied at startup and after every scan.
+                    </p>
+                </div>
+
+                <div class="kd-band">
+                    <h3 class="sectionTitle">Comportamiento</h3>
+                    <div class="kd-grid">
+                        <label class="emby-checkbox-label">
+                            <input is="emby-checkbox" type="checkbox" id="InjectClientScript" />
+                            <span>Show the "K" toggle in the web client topbar</span>
+                        </label>
+                    </div>
+                    <div class="inputContainer" style="margin-top:.8rem">
+                        <label class="inputLabel inputLabelUnfocused" for="KidsTag">Tag marcador</label>
+                        <input is="emby-input" id="KidsTag" type="text" />
+                        <div class="fieldDescription">Visible tag applied to content on the global list. Defaults to <code>kids</code>.</div>
+                    </div>
+                </div>
+
+                <div class="kd-band">
+                    <h3 class="sectionTitle">Cuentas</h3>
+                    <p class="kd-note">
+                        <strong>Available</strong>: the account has Kids Mode (topbar switch plus the marking buttons). On by default.
+                        <strong>Active now</strong>: the account is currently inside Kids Mode.
+                    </p>
+                    <table class="kd-users">
+                        <thead>
+                            <tr>
+                                <th>Cuenta</th>
+                                <th>Disponible</th>
+                                <th>Activo ahora</th>
+                                <th>En kids</th>
+                                <th>Override</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="KidsUsersBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="kd-band">
+                    <h3 class="sectionTitle">
+                        Lista kids global <span class="kd-count" id="KidsAdminCount"></span>
+                    </h3>
+                    <p class="kd-note">The baseline for every account. Marking a library propagates the tag to its contents.</p>
+                    <div class="kd-actions" style="margin-top:.3rem">
+                        <button is="emby-button" type="button" id="KidsSyncButton" class="raised">
+                            <span class="material-icons" aria-hidden="true">sync</span>
+                            <span>Sincronizar</span>
+                        </button>
+                        <button is="emby-button" type="button" id="KidsReload" class="button-flat">
+                            <span class="material-icons" aria-hidden="true">refresh</span>
+                            <span>Recargar</span>
+                        </button>
+                    </div>
+                    <div class="kd-msg" id="KidsSyncMsg"></div>
+                    <div id="KidsAdminList" class="kd-list"></div>
+
+                    <div class="kd-toolbar">
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="KidsSearchTerm">Search for items to add</label>
+                            <input is="emby-input" id="KidsSearchTerm" type="text" />
+                        </div>
+                        <button is="emby-button" type="button" id="KidsSearchButton" class="button-flat">
+                            <span class="material-icons" aria-hidden="true">search</span>
+                            <span>Buscar</span>
+                        </button>
+                    </div>
+                    <h4 style="margin:.2rem 0">Libraries</h4>
+                    <div id="KidsLibrariesList" class="kd-list"></div>
+                    <div id="KidsSearchResults" class="kd-list"></div>
+                </div>
+
+                <div class="kd-band" id="KidsUserPanel" style="display:none">
+                    <h3 class="sectionTitle">List for <span id="KidsUserPanelName"></span> <span class="kd-count" id="KidsUserPanelCount"></span></h3>
+                    <p class="kd-note">
+                        This account's effective list = global list + added − removed. Tick or untick to edit
+                        <strong>this account's</strong> override; it does not affect anyone else.
+                    </p>
+                    <button is="emby-button" type="button" id="KidsUserPanelClose" class="button-flat">
+                        <span class="material-icons" aria-hidden="true">close</span><span>Cerrar</span>
+                    </button>
+                    <div id="KidsUserItemList" class="kd-list"></div>
+                </div>
+
+                <div class="kd-actions">
+                    <button is="emby-button" type="submit" class="raised button-submit">
+                        <span class="material-icons" aria-hidden="true">save</span>
+                        <span>Guardar ajustes</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        (function () {
+            var pluginId = 'f287bf82-3886-47fa-a23c-1d7b562dd1f3';
+            var page = document.querySelector('#KidsModeConfigPage');
+            var currentConfig = null;
+            var users = [];
+            var openUserId = null;
+
+            function apiUrl(p) { return ApiClient.getUrl(p); }
+            function ajax(path, type, body) {
+                return ApiClient.ajax({
+                    type: type || 'GET', url: apiUrl(path),
+                    data: body ? JSON.stringify(body) : null,
+                    contentType: 'application/json', dataType: 'json',
+                    headers: { accept: 'application/json' }
+                });
+            }
+            function byId(id) { return page.querySelector('#' + id); }
+            function esc(v) {
+                return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
+                    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+                });
+            }
+            function norm(id) { return String(id || '').replace(/-/g, '').toLowerCase(); }
+
+            // -------------------------------------------------- users
+
+            function renderUsers() {
+                byId('KidsUsersBody').innerHTML = users.map(function (u) {
+                    return [
+                        '<tr data-uid="' + u.Id + '">',
+                            '<td data-label="Cuenta"><div class="kd-uname"><span class="material-icons">person</span><span>' + esc(u.Username) + '</span>' + (u.IsAdministrator ? '<span class="kd-pill">admin</span>' : '') + '</div></td>',
+                            '<td data-label="Available"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" class="kd-u-enabled" ' + (u.Enabled ? 'checked' : '') + ' /><span>Yes</span></label></td>',
+                            '<td data-label="Active now"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" class="kd-u-active" ' + (u.Active ? 'checked' : '') + (u.Enabled ? '' : ' disabled') + ' /><span>Active</span></label></td>',
+                            '<td data-label="En kids"><span class="kd-pill ' + (u.Active ? 'on' : '') + '">' + u.EffectiveCount + '</span></td>',
+                            '<td data-label="Override">' + (u.Added || u.Removed ? '<span class="kd-src added">+' + u.Added + '</span> <span class="kd-src removed">−' + u.Removed + '</span>' : '<span class="kd-count">—</span>') + '</td>',
+                            '<td><button type="button" class="kd-linkbtn kd-u-edit">Ver / editar lista</button></td>',
+                        '</tr>'
+                    ].join('');
+                }).join('');
+            }
+
+            function loadUsers() {
+                return ajax('KidsMode/Users').then(function (r) { users = r || []; renderUsers(); });
+            }
+
+            function setUserFlag(uid, which, value) {
+                Dashboard.showLoadingMsg();
+                var ep = which === 'enabled' ? 'Enabled' : 'Active';
+                return ajax('KidsMode/Users/' + uid + '/' + ep, 'POST', { Value: value })
+                    .then(function (r) { users = r || []; renderUsers(); if (openUserId) { loadUserItems(openUserId); } Dashboard.hideLoadingMsg(); })
+                    .catch(function () { Dashboard.hideLoadingMsg(); loadUsers(); });
+            }
+
+            // -------------------------------------------------- item rows
+
+            function row(item, opts) {
+                opts = opts || {};
+                var checked = opts.forceChecked != null ? opts.forceChecked : item.InKids;
+                var meta = [item.Type || item.CollectionType, item.Path].filter(Boolean).join(' · ');
+                var srcTag = '';
+                if (item.Source === 'added') { srcTag = '<span class="kd-src added">added</span>'; }
+                else if (item.Source === 'removed') { srcTag = '<span class="kd-src removed">quitado</span>'; }
+                else if (item.Source === 'admin') { srcTag = '<span class="kd-src">global</span>'; }
+                return [
+                    '<div class="kd-row' + (item.Exists === false ? ' gone' : '') + '" data-id="' + item.Id + '">',
+                        '<div><div class="kd-row-title">' + esc(item.Name) + srcTag + '</div>',
+                        (meta ? '<div class="kd-row-meta">' + esc(meta) + '</div>' : '') + '</div>',
+                        '<label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" class="' + opts.cls + '" ' + (checked ? 'checked' : '') + ' /><span>kids</span></label>',
+                    '</div>'
+                ].join('');
+            }
+
+            function renderList(id, items, opts) {
+                var t = byId(id);
+                if (!items || !items.length) { t.innerHTML = '<div class="kd-empty">No results</div>'; return; }
+                t.innerHTML = items.map(function (i) { return row(i, opts); }).join('');
+            }
+
+            // -------------------------------------------------- admin global list
+
+            function loadAdmin() {
+                return ajax('KidsMode/AdminItems').then(function (rows) {
+                    rows = rows || [];
+                    byId('KidsAdminCount').textContent = rows.length ? '(' + rows.length + ')' : '';
+                    renderList('KidsAdminList', rows, { cls: 'kd-admin-item', forceChecked: true });
+                });
+            }
+
+            function loadLibraries() {
+                return ajax('Library/VirtualFolders').then(function (folders) {
+                    var libs = (folders || []).map(function (f) {
+                        return { Id: f.ItemId, Name: f.Name, Type: 'Biblioteca', CollectionType: f.CollectionType, Path: (f.Locations || [])[0] || '', Source: 'admin' };
+                    });
+                    return Promise.all(libs.map(function (l) {
+                        return ajax('KidsMode/Items/' + l.Id).then(function (s) { l.InKids = !!(s && s.InKids); }).catch(function () {});
+                    })).then(function () { renderList('KidsLibrariesList', libs, { cls: 'kd-admin-item' }); });
+                });
+            }
+
+            function searchItems() {
+                var term = byId('KidsSearchTerm').value.trim();
+                if (!term) { renderList('KidsSearchResults', []); return Promise.resolve(); }
+                Dashboard.showLoadingMsg();
+                var url = 'Items?Recursive=true&Limit=60&SearchTerm=' + encodeURIComponent(term)
+                    + '&Fields=Tags,Path&SortBy=SortName'
+                    + '&IncludeItemTypes=Movie,Series,Season,Episode,BoxSet,MusicAlbum,Book,Folder';
+                return ajax(url).then(function (res) {
+                    var items = ((res && res.Items) || []).map(function (i) {
+                        return { Id: i.Id, Name: i.Name, Type: i.Type, Path: i.Path, Source: 'admin',
+                            InKids: (i.Tags || []).some(function (t) { return String(t).toLowerCase() === (currentConfig.KidsTag || 'kids').toLowerCase(); }) };
+                    });
+                    renderList('KidsSearchResults', items, { cls: 'kd-admin-item' });
+                    Dashboard.hideLoadingMsg();
+                }).catch(function () { Dashboard.hideLoadingMsg(); });
+            }
+
+            function setAdminItem(itemId, inKids) {
+                Dashboard.showLoadingMsg();
+                return ajax('KidsMode/Items/' + itemId, 'POST', { InKids: inKids })
+                    .then(function () { return Promise.all([loadAdmin(), loadLibraries(), loadUsers()]); })
+                    .then(function () {
+                        if (openUserId) { return loadUserItems(openUserId); }
+                    })
+                    .then(function () {
+                        var term = byId('KidsSearchTerm').value.trim();
+                        if (term) { return searchItems(); }
+                    })
+                    .then(function () { Dashboard.hideLoadingMsg(); })
+                    .catch(function () { Dashboard.hideLoadingMsg(); });
+            }
+
+            function runSync() {
+                var msg = byId('KidsSyncMsg');
+                msg.textContent = 'Sincronizando…';
+                Dashboard.showLoadingMsg();
+                ajax('KidsMode/Sync', 'POST').then(function (r) {
+                    r = r || {};
+                    msg.textContent = 'Listo — global ' + (r.AdminTotal || 0) + ' · '
+                        + (r.Discovered || 0) + ' found \u00b7 ' + (r.Removed || 0) + ' orphans \u00b7 '
+                        + (r.UsersReconciled || 0) + ' cuentas (' + (r.TagWrites || 0) + ' cambios de tag).';
+                    return Promise.all([loadAdmin(), loadLibraries(), loadUsers()]);
+                }).then(function () {
+                    if (openUserId) { return loadUserItems(openUserId); }
+                }).then(function () { Dashboard.hideLoadingMsg(); })
+                  .catch(function () { msg.textContent = 'Sync failed.'; Dashboard.hideLoadingMsg(); });
+            }
+
+            // -------------------------------------------------- per-user panel
+
+            function openUser(uid) {
+                openUserId = uid;
+                var u = users.filter(function (x) { return norm(x.Id) === norm(uid); })[0];
+                byId('KidsUserPanelName').textContent = u ? u.Username : '';
+                byId('KidsUserPanel').style.display = '';
+                byId('KidsUserPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                loadUserItems(uid);
+            }
+
+            function loadUserItems(uid) {
+                return ajax('KidsMode/Users/' + uid + '/Items').then(function (rows) {
+                    rows = rows || [];
+                    byId('KidsUserPanelCount').textContent = '(' + rows.filter(function (r) { return r.InKids; }).length + ' visibles)';
+                    renderList('KidsUserItemList', rows, { cls: 'kd-user-item' });
+                });
+            }
+
+            function setUserItem(uid, itemId, inKids) {
+                Dashboard.showLoadingMsg();
+                return ajax('KidsMode/Users/' + uid + '/Items/' + itemId, 'POST', { InKids: inKids })
+                    .then(function () { return Promise.all([loadUserItems(uid), loadUsers()]); })
+                    .then(function () { Dashboard.hideLoadingMsg(); })
+                    .catch(function () { Dashboard.hideLoadingMsg(); });
+            }
+
+            // -------------------------------------------------- config
+
+            function load() {
+                Dashboard.showLoadingMsg();
+                return ApiClient.getPluginConfiguration(pluginId).then(function (c) {
+                    currentConfig = c || {};
+                    byId('InjectClientScript').checked = currentConfig.InjectClientScript !== false;
+                    byId('KidsTag').value = currentConfig.KidsTag || 'kids';
+                    return Promise.all([loadUsers(), loadAdmin(), loadLibraries()]);
+                }).then(function () { Dashboard.hideLoadingMsg(); })
+                  .catch(function () { Dashboard.hideLoadingMsg(); });
+            }
+
+            function collectConfig() {
+                currentConfig.InjectClientScript = byId('InjectClientScript').checked;
+                currentConfig.KidsTag = byId('KidsTag').value.trim() || 'kids';
+                return currentConfig;
+            }
+
+            // -------------------------------------------------- events
+
+            page.addEventListener('pageshow', load);
+            byId('KidsReload').addEventListener('click', function () { Dashboard.showLoadingMsg(); Promise.all([loadAdmin(), loadUsers()]).then(Dashboard.hideLoadingMsg); });
+            byId('KidsSyncButton').addEventListener('click', runSync);
+            byId('KidsSearchButton').addEventListener('click', searchItems);
+            byId('KidsSearchTerm').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); searchItems(); } });
+            byId('KidsUserPanelClose').addEventListener('click', function () { openUserId = null; byId('KidsUserPanel').style.display = 'none'; });
+
+            page.addEventListener('click', function (e) {
+                var edit = e.target.closest && e.target.closest('.kd-u-edit');
+                if (edit) { openUser(edit.closest('tr').getAttribute('data-uid')); }
+            });
+
+            page.addEventListener('change', function (e) {
+                var t = e.target;
+                if (!t) { return; }
+                if (t.classList.contains('kd-u-enabled')) {
+                    setUserFlag(t.closest('tr').getAttribute('data-uid'), 'enabled', t.checked);
+                } else if (t.classList.contains('kd-u-active')) {
+                    setUserFlag(t.closest('tr').getAttribute('data-uid'), 'active', t.checked);
+                } else if (t.classList.contains('kd-admin-item')) {
+                    setAdminItem(t.closest('.kd-row').getAttribute('data-id'), t.checked);
+                } else if (t.classList.contains('kd-user-item') && openUserId) {
+                    setUserItem(openUserId, t.closest('.kd-row').getAttribute('data-id'), t.checked);
+                }
+            });
+
+            byId('KidsModeConfigForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                Dashboard.showLoadingMsg();
+                ApiClient.updatePluginConfiguration(pluginId, collectConfig()).then(function (result) {
+                    Dashboard.processPluginConfigurationUpdateResult(result);
+                }).catch(function () { Dashboard.hideLoadingMsg(); });
+                return false;
+            });
+        })();
+    </script>
+</div>
+</body>
+</html>

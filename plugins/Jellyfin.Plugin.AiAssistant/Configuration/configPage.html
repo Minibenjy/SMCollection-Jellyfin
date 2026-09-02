@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>AI Assistant</title>
+</head>
+<body>
+<div id="aiAssistantConfigPage" data-role="page" class="page type-interior pluginConfigurationPage">
+  <div data-role="content">
+    <div class="content-primary">
+      <form id="aiAssistantConfigForm">
+
+        <h2>Availability</h2>
+
+        <div class="checkboxContainer checkboxContainer-withDescription">
+          <label class="emby-checkbox-label">
+            <input is="emby-checkbox" type="checkbox" id="allowUserProviders" />
+            <span>Let users configure their own provider</span>
+          </label>
+          <div class="fieldDescription checkboxFieldDescription">
+            When off, every user is routed through the server default below.
+          </div>
+        </div>
+
+        <div class="inputContainer">
+          <label class="inputLabel inputLabelUnfocused" for="allowedProviders">Allowed providers</label>
+          <input is="emby-input" type="text" id="allowedProviders" />
+          <div class="fieldDescription">
+            Comma-separated provider ids, for example <code>ollama,anthropic</code>. Leave empty to allow all.
+          </div>
+        </div>
+
+        <h2>Server default</h2>
+        <div class="fieldDescription" style="margin-bottom:1em;">
+          Used by users who have not configured a provider of their own.
+        </div>
+
+        <div class="selectContainer">
+          <label class="selectLabel" for="defaultProviderId">Default provider</label>
+          <select is="emby-select" id="defaultProviderId">
+            <option value="">None</option>
+          </select>
+        </div>
+
+        <div class="inputContainer">
+          <label class="inputLabel inputLabelUnfocused" for="defaultBaseUrl">Endpoint</label>
+          <input is="emby-input" type="text" id="defaultBaseUrl" placeholder="http://localhost:11434" />
+          <div class="fieldDescription">Leave empty to use the provider's own default endpoint.</div>
+        </div>
+
+        <div class="inputContainer">
+          <label class="inputLabel inputLabelUnfocused" for="defaultModel">Model</label>
+          <input is="emby-input" type="text" id="defaultModel" />
+        </div>
+
+        <div class="inputContainer">
+          <label class="inputLabel inputLabelUnfocused" for="serverCredential">API key</label>
+          <input is="emby-input" type="password" id="serverCredential" autocomplete="new-password"
+                 placeholder="Leave blank to keep the stored key" />
+          <div class="fieldDescription">
+            Stored encrypted outside this configuration file and never sent back to the browser.
+            Currently stored: <span id="credentialHint">none</span>.
+            <button type="button" is="emby-button" class="raised raised-mini" id="clearCredential">Remove</button>
+          </div>
+        </div>
+
+        <div class="checkboxContainer checkboxContainer-withDescription">
+          <label class="emby-checkbox-label">
+            <input is="emby-checkbox" type="checkbox" id="shareServerCredential" />
+            <span>Let users without their own key use this one</span>
+          </label>
+          <div class="fieldDescription checkboxFieldDescription">
+            Every request made by those users is billed to this account. Leave off unless you intend that.
+          </div>
+        </div>
+
+        <div class="inputContainer">
+          <label class="inputLabel inputLabelUnfocused" for="metadataLanguage">Library language</label>
+          <input is="emby-input" type="text" id="metadataLanguage" placeholder="Spanish" />
+          <div class="fieldDescription">
+            The language your titles and episode names are catalogued in. A model knows titles in
+            the language it was trained on, which is often not this one, and searching the wrong
+            language finds nothing even when the library has the title. Users can override this.
+          </div>
+        </div>
+
+        <h2>Limits</h2>
+
+        <div class="inputContainer">
+          <label class="inputLabel inputLabelUnfocused" for="maxRequestsPerUserPerHour">
+            Requests per user per hour
+          </label>
+          <input is="emby-input" type="number" id="maxRequestsPerUserPerHour" min="0" step="1" />
+          <div class="fieldDescription">0 removes the limit.</div>
+        </div>
+
+        <div class="inputContainer">
+          <label class="inputLabel inputLabelUnfocused" for="maxToolCallsPerExchange">
+            Tool calls per exchange
+          </label>
+          <input is="emby-input" type="number" id="maxToolCallsPerExchange" min="1" max="32" step="1" />
+        </div>
+
+        <div class="checkboxContainer checkboxContainer-withDescription">
+          <label class="emby-checkbox-label">
+            <input is="emby-checkbox" type="checkbox" id="enableMutatingTools" />
+            <span>Allow the assistant to create collections and playlists</span>
+          </label>
+          <div class="fieldDescription checkboxFieldDescription">
+            Creation is always confirmed by the user first. Turn this off to make the assistant read-only.
+          </div>
+        </div>
+
+        <h2>Presentation</h2>
+
+        <div class="inputContainer">
+          <label class="inputLabel inputLabelUnfocused" for="serverLabel">Server name used by the assistant</label>
+          <input is="emby-input" type="text" id="serverLabel" />
+        </div>
+
+        <div class="checkboxContainer">
+          <label class="emby-checkbox-label">
+            <input is="emby-checkbox" type="checkbox" id="injectClientScript" />
+            <span>Add the assistant to the web client</span>
+          </label>
+        </div>
+
+        <div>
+          <button is="emby-button" type="submit" class="raised button-submit block">
+            <span>Save</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+(function () {
+    'use strict';
+
+    var PLUGIN_ID = 'b41b7b06-6a1d-4f2c-9a63-1f0e5c7d8a24';
+
+    function form() {
+        return document.querySelector('#aiAssistantConfigPage');
+    }
+
+    function providerId() {
+        return form().querySelector('#defaultProviderId').value;
+    }
+
+    function loadProviders(selected) {
+        // The provider list comes from the server so the dropdown always reflects
+        // what is actually installed, rather than a list hardcoded in this page.
+        return ApiClient.getJSON(ApiClient.getUrl('AiAssistant/Providers')).then(function (providers) {
+            var select = form().querySelector('#defaultProviderId');
+            select.innerHTML = '<option value="">None</option>';
+            providers.forEach(function (p) {
+                var option = document.createElement('option');
+                option.value = p.Id;
+                option.textContent = p.DisplayName;
+                select.appendChild(option);
+            });
+            select.value = selected || '';
+        });
+    }
+
+    function loadCredentialHint() {
+        var id = providerId();
+        var target = form().querySelector('#credentialHint');
+        if (!id) {
+            target.textContent = 'none';
+            return;
+        }
+
+        ApiClient.getJSON(ApiClient.getUrl('AiAssistant/Admin/Credential/' + encodeURIComponent(id)))
+            .then(function (hint) {
+                target.textContent = hint || 'none';
+            })
+            .catch(function () {
+                target.textContent = 'none';
+            });
+    }
+
+    function load() {
+        Dashboard.showLoadingMsg();
+
+        ApiClient.getPluginConfiguration(PLUGIN_ID).then(function (config) {
+            var page = form();
+            page.querySelector('#allowUserProviders').checked = config.AllowUserProviders;
+            page.querySelector('#allowedProviders').value = config.AllowedProviders || '';
+            page.querySelector('#defaultBaseUrl').value = config.DefaultBaseUrl || '';
+            page.querySelector('#defaultModel').value = config.DefaultModel || '';
+            page.querySelector('#shareServerCredential').checked = config.ShareServerCredential;
+            page.querySelector('#maxRequestsPerUserPerHour').value = config.MaxRequestsPerUserPerHour;
+            page.querySelector('#maxToolCallsPerExchange').value = config.MaxToolCallsPerExchange;
+            page.querySelector('#enableMutatingTools').checked = config.EnableMutatingTools;
+            page.querySelector('#injectClientScript').checked = config.InjectClientScript;
+            page.querySelector('#serverLabel').value = config.ServerLabel || '';
+            page.querySelector('#metadataLanguage').value = config.MetadataLanguage || '';
+
+            return loadProviders(config.DefaultProviderId);
+        }).then(function () {
+            loadCredentialHint();
+            Dashboard.hideLoadingMsg();
+        }).catch(function () {
+            Dashboard.hideLoadingMsg();
+        });
+    }
+
+    function save(event) {
+        event.preventDefault();
+        Dashboard.showLoadingMsg();
+
+        var page = form();
+
+        ApiClient.getPluginConfiguration(PLUGIN_ID).then(function (config) {
+            config.AllowUserProviders = page.querySelector('#allowUserProviders').checked;
+            config.AllowedProviders = page.querySelector('#allowedProviders').value.trim();
+            config.DefaultProviderId = page.querySelector('#defaultProviderId').value;
+            config.DefaultBaseUrl = page.querySelector('#defaultBaseUrl').value.trim();
+            config.DefaultModel = page.querySelector('#defaultModel').value.trim();
+            config.ShareServerCredential = page.querySelector('#shareServerCredential').checked;
+            config.MaxRequestsPerUserPerHour = parseInt(page.querySelector('#maxRequestsPerUserPerHour').value, 10) || 0;
+            config.MaxToolCallsPerExchange = parseInt(page.querySelector('#maxToolCallsPerExchange').value, 10) || 8;
+            config.EnableMutatingTools = page.querySelector('#enableMutatingTools').checked;
+            config.InjectClientScript = page.querySelector('#injectClientScript').checked;
+            config.ServerLabel = page.querySelector('#serverLabel').value.trim() || 'this media server';
+            config.MetadataLanguage = page.querySelector('#metadataLanguage').value.trim();
+
+            return ApiClient.updatePluginConfiguration(PLUGIN_ID, config);
+        }).then(function (result) {
+            Dashboard.processPluginConfigurationUpdateResult(result);
+
+            // The API key never travels through the plugin configuration object; it is
+            // posted separately so it lands in the encrypted vault instead of the XML.
+            var keyField = page.querySelector('#serverCredential');
+            var key = keyField.value.trim();
+            if (!key || !providerId()) {
+                return null;
+            }
+
+            return ApiClient.ajax({
+                type: 'POST',
+                url: ApiClient.getUrl('AiAssistant/Admin/Credential/' + encodeURIComponent(providerId())),
+                data: JSON.stringify({ ApiKey: key }),
+                contentType: 'application/json'
+            }).then(function () {
+                keyField.value = '';
+                loadCredentialHint();
+            });
+        }).then(function () {
+            Dashboard.hideLoadingMsg();
+        }).catch(function () {
+            Dashboard.hideLoadingMsg();
+        });
+    }
+
+    function removeCredential() {
+        if (!providerId()) {
+            return;
+        }
+
+        ApiClient.ajax({
+            type: 'DELETE',
+            url: ApiClient.getUrl('AiAssistant/Admin/Credential/' + encodeURIComponent(providerId()))
+        }).then(loadCredentialHint);
+    }
+
+    document.querySelector('#aiAssistantConfigPage').addEventListener('pageshow', load);
+    document.querySelector('#aiAssistantConfigForm').addEventListener('submit', save);
+    document.querySelector('#clearCredential').addEventListener('click', removeCredential);
+    document.querySelector('#defaultProviderId').addEventListener('change', loadCredentialHint);
+})();
+</script>
+</body>
+</html>

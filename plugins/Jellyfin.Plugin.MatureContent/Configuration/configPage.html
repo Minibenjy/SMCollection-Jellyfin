@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mature Content</title>
+    <style>
+        .mc-admin-shell { max-width: 1000px; }
+        .mc-note { color: var(--theme-text-secondary-color, #aaa); line-height: 1.45; margin: .35rem 0 1rem; }
+        .mc-band { border: 1px solid rgba(128,128,128,.28); border-radius: 8px; padding: 1rem 1.1rem; margin: 1rem 0; background: rgba(128,128,128,.06); }
+        .mc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: .6rem 1rem; }
+        .mc-users { width: 100%; border-collapse: collapse; margin-top: .5rem; }
+        .mc-users th, .mc-users td { text-align: left; padding: .6rem .5rem; border-bottom: 1px solid rgba(128,128,128,.2); vertical-align: middle; }
+        .mc-users th { color: var(--theme-text-secondary-color, #aaa); font-weight: 600; font-size: .82rem; }
+        .mc-user-name { display: flex; align-items: center; gap: .5rem; }
+        .mc-user-name .material-icons { color: #00a4dc; font-size: 1.3rem; }
+        .mc-pill { display: inline-flex; align-items: center; height: 22px; border-radius: 5px; padding: 0 .4rem; background: rgba(128,128,128,.22); font-size: .78rem; }
+        .mc-pill.on { background: #000; color: #ff3b3b; box-shadow: inset 0 0 0 1px rgba(255,59,59,.5); }
+        .mc-actions { display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; margin-top: 1rem; }
+        .mc-toolbar { display: flex; gap: .6rem; align-items: flex-end; flex-wrap: wrap; margin: .6rem 0; }
+        .mc-toolbar .inputContainer { flex: 1 1 240px; margin: 0; }
+        .mc-list { display: grid; gap: .4rem; margin-top: .7rem; max-height: 460px; overflow: auto; padding-right: .2rem; }
+        .mc-row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: .75rem; align-items: center; padding: .55rem .7rem; border: 1px solid rgba(128,128,128,.22); border-radius: 7px; background: rgba(128,128,128,.05); }
+        .mc-row.gone { opacity: .55; }
+        .mc-row-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .mc-row-meta { color: var(--theme-text-secondary-color, #aaa); font-size: .8rem; margin-top: .1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .mc-empty { color: var(--theme-text-secondary-color, #aaa); padding: .7rem 0; }
+        .mc-count { font-size: .82rem; color: var(--theme-text-secondary-color, #aaa); margin-left: .4rem; }
+        .mc-syncmsg { margin-top: .5rem; font-size: .85rem; }
+        @media (max-width: 760px) {
+            .mc-users, .mc-users tbody, .mc-users tr, .mc-users td { display: block; width: 100%; }
+            .mc-users thead { display: none; }
+            .mc-users tr { border-bottom: 1px solid rgba(128,128,128,.3); padding: .5rem 0; }
+            .mc-users td { border: 0; padding: .35rem 0; }
+            .mc-users td::before { content: attr(data-label); display: block; color: var(--theme-text-secondary-color, #aaa); font-size: .76rem; margin-bottom: .2rem; }
+        }
+    </style>
+</head>
+<body>
+<div id="MatureContentConfigPage" data-role="page" class="page type-interior pluginConfigurationPage">
+    <div data-role="content">
+        <div class="content-primary mc-admin-shell">
+            <form id="MatureContentConfigForm">
+                <div class="verticalSection">
+                    <h2 class="sectionTitle">Mature Content</h2>
+                    <p class="mc-note">
+                        Mark any item, folder, series, library or collection as <strong>+18</strong>. The mark is kept in the
+                        plugin's own durable history and re-applied at startup and after every library scan, so a metadata
+                        refresh cannot wipe it. When a user has +18 hidden, those
+                        tags go into their native Jellyfin <em>blocked tags</em>.
+                    </p>
+                </div>
+
+                <div class="mc-band">
+                    <h3 class="sectionTitle">Comportamiento global</h3>
+                    <div class="mc-grid">
+                        <label class="emby-checkbox-label">
+                            <input is="emby-checkbox" type="checkbox" id="InjectClientScript" />
+                            <span>Show controls in the web client (topbar toggle plus marking buttons for administrators)</span>
+                        </label>
+                        <label class="emby-checkbox-label">
+                            <input is="emby-checkbox" type="checkbox" id="ShowToggleForAdministrators" />
+                            <span>Administrators get the +18 toggle in the topbar by default</span>
+                        </label>
+                        <label class="emby-checkbox-label">
+                            <input is="emby-checkbox" type="checkbox" id="ShowToggleForUsers" />
+                            <span>Regular users get the +18 toggle in the topbar by default</span>
+                        </label>
+                        <label class="emby-checkbox-label">
+                            <input is="emby-checkbox" type="checkbox" id="DefaultVisibleWhenToggleHidden" />
+                            <span>Without the toggle, +18 is visible (untick and it stays hidden)</span>
+                        </label>
+                    </div>
+                    <div class="inputContainer" style="margin-top:.8rem">
+                        <label class="inputLabel inputLabelUnfocused" for="MatureTags">Tags mature</label>
+                        <input is="emby-input" id="MatureTags" type="text" />
+                        <div class="fieldDescription">Comma separated. The <code>mature</code> and <code>+18</code> aliases are always kept.</div>
+                    </div>
+                </div>
+
+                <div class="mc-band">
+                    <h3 class="sectionTitle">Users</h3>
+                    <p class="mc-note">
+                        <strong>Show +18 now</strong> changes instantly what that user can see.
+                        <strong>Can toggle it</strong> gives them the +18 switch in their topbar so they control it themselves
+                        (saved when you press Save).
+                    </p>
+                    <table class="mc-users">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Ver +18 ahora</th>
+                                <th>Puede alternarlo</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="MatureUsersBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="mc-band">
+                    <h3 class="sectionTitle">
+                        Contenido marcado como +18
+                        <span class="mc-count" id="MatureMarkedCount"></span>
+                    </h3>
+                    <div class="mc-actions" style="margin-top:.4rem">
+                        <button is="emby-button" type="button" id="MatureSyncButton" class="raised">
+                            <span class="material-icons" aria-hidden="true">sync</span>
+                            <span>Sync with the library</span>
+                        </button>
+                        <button is="emby-button" type="button" id="MatureReloadMarked" class="button-flat">
+                            <span class="material-icons" aria-hidden="true">refresh</span>
+                            <span>Recargar lista</span>
+                        </button>
+                    </div>
+                    <div class="mc-syncmsg" id="MatureSyncMsg"></div>
+                    <div id="MatureMarkedList" class="mc-list"></div>
+                </div>
+
+                <div class="mc-band">
+                    <h3 class="sectionTitle">Mark new content</h3>
+                    <h4 style="margin-bottom:.2rem">Libraries</h4>
+                    <p class="mc-note">Marking a library propagates the tag to everything inside it.</p>
+                    <div id="MatureLibrariesList" class="mc-list"></div>
+
+                    <div class="mc-toolbar">
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="MatureSearchTerm">Search for items</label>
+                            <input is="emby-input" id="MatureSearchTerm" type="text" />
+                        </div>
+                        <button is="emby-button" type="button" id="MatureSearchButton" class="button-flat">
+                            <span class="material-icons" aria-hidden="true">search</span>
+                            <span>Buscar</span>
+                        </button>
+                    </div>
+                    <div id="MatureSearchResults" class="mc-list"></div>
+                </div>
+
+                <div class="mc-actions">
+                    <button is="emby-button" type="submit" class="raised button-submit">
+                        <span class="material-icons" aria-hidden="true">save</span>
+                        <span>Guardar ajustes</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        (function () {
+            var pluginId = '0fd6a7ab-5519-4aa3-9fd0-bd3f93c1b1f4';
+            var page = document.querySelector('#MatureContentConfigPage');
+            var users = [];
+            var libraries = [];
+            var currentConfig = null;
+
+            function apiUrl(path) { return ApiClient.getUrl(path); }
+
+            function ajax(path, type, body) {
+                return ApiClient.ajax({
+                    type: type || 'GET',
+                    url: apiUrl(path),
+                    data: body ? JSON.stringify(body) : null,
+                    contentType: 'application/json',
+                    dataType: 'json',
+                    headers: { accept: 'application/json' }
+                });
+            }
+
+            function byId(id) { return page.querySelector('#' + id); }
+
+            function escapeHtml(value) {
+                return String(value == null ? '' : value).replace(/[&<>"']/g, function (ch) {
+                    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+                });
+            }
+
+            function norm(id) { return String(id || '').replace(/-/g, '').toLowerCase(); }
+
+            function getRule(config, userId) {
+                var rules = config.UserRules || [];
+                for (var i = 0; i < rules.length; i++) {
+                    if (norm(rules[i].UserId) === norm(userId)) { return rules[i]; }
+                }
+                return null;
+            }
+
+            // ---------------------------------------------------------- users
+
+            function renderUsers() {
+                var body = byId('MatureUsersBody');
+                body.innerHTML = users.map(function (u) {
+                    var rule = getRule(currentConfig, u.Id);
+                    var canToggle = rule ? !!rule.ShowToggle
+                        : (u.IsAdministrator ? !!currentConfig.ShowToggleForAdministrators : !!currentConfig.ShowToggleForUsers);
+                    return [
+                        '<tr data-user-id="' + u.Id + '">',
+                            '<td data-label="Usuario"><div class="mc-user-name"><span class="material-icons" aria-hidden="true">person</span><span>' + escapeHtml(u.Username) + '</span>' + (u.IsAdministrator ? '<span class="mc-pill">admin</span>' : '') + '</div></td>',
+                            '<td data-label="Ver +18 ahora"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" class="mc-user-visible" ' + (u.MatureVisible ? 'checked' : '') + ' /><span>Visible</span></label></td>',
+                            '<td data-label="Puede alternarlo"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" class="mc-user-toggle" ' + (canToggle ? 'checked' : '') + ' /><span>Switch +18</span></label></td>',
+                            '<td data-label="Status"><span class="mc-pill ' + (u.MatureVisible ? 'on' : '') + '">' + (u.MatureVisible ? '+18 visible' : 'hidden') + '</span></td>',
+                        '</tr>'
+                    ].join('');
+                }).join('');
+            }
+
+            function onUserVisibleChange(tr, checked) {
+                var userId = tr.getAttribute('data-user-id');
+                Dashboard.showLoadingMsg();
+                ajax('MatureContent/Users/' + userId + '/Visible', 'POST', { MatureVisible: checked })
+                    .then(function (row) {
+                        for (var i = 0; i < users.length; i++) {
+                            if (norm(users[i].Id) === norm(userId)) { users[i] = row; }
+                        }
+                        renderUsers();
+                        Dashboard.hideLoadingMsg();
+                    })
+                    .catch(function () { Dashboard.hideLoadingMsg(); loadUsers(); });
+            }
+
+            function loadUsers() {
+                return ajax('MatureContent/Users').then(function (r) { users = r || []; renderUsers(); });
+            }
+
+            // ---------------------------------------------------------- item rows
+
+            function isMatureItem(item) {
+                if (typeof item.IsMature === 'boolean') { return item.IsMature; }
+                var tags = item.Tags || [];
+                return tags.some(function (t) { t = String(t).toLowerCase(); return t === 'mature' || t === '+18'; });
+            }
+
+            function itemRow(item, opts) {
+                opts = opts || {};
+                var mature = isMatureItem(item);
+                var meta = [item.Type || item.CollectionType, item.Path].filter(Boolean).join(' · ');
+                return [
+                    '<div class="mc-row' + (item.Exists === false ? ' gone' : '') + '" data-item-id="' + item.Id + '">',
+                        '<div>',
+                            '<div class="mc-row-title">' + escapeHtml(item.Name) + '</div>',
+                            (meta ? '<div class="mc-row-meta">' + escapeHtml(meta) + '</div>' : ''),
+                        '</div>',
+                        '<label class="emby-checkbox-label">',
+                            '<input is="emby-checkbox" type="checkbox" class="mc-item-mature" ' + (mature ? 'checked' : '') + (item.Exists === false ? ' checked' : '') + ' />',
+                            '<span>+18</span>',
+                        '</label>',
+                    '</div>'
+                ].join('');
+            }
+
+            function renderList(targetId, items, opts) {
+                var target = byId(targetId);
+                if (!items || !items.length) { target.innerHTML = '<div class="mc-empty">No results</div>'; return; }
+                target.innerHTML = items.map(function (i) { return itemRow(i, opts); }).join('');
+            }
+
+            function setItemMature(itemId, isMature) {
+                Dashboard.showLoadingMsg();
+                return ajax('MatureContent/Items/' + itemId, 'POST', { IsMature: isMature })
+                    .then(function () { return Promise.all([loadMarked(), loadLibraries()]); })
+                    .then(function () {
+                        var term = byId('MatureSearchTerm').value.trim();
+                        if (term) { return searchItems(); }
+                    })
+                    .then(function () { Dashboard.hideLoadingMsg(); })
+                    .catch(function () { Dashboard.hideLoadingMsg(); });
+            }
+
+            // ---------------------------------------------------------- marked list
+
+            function loadMarked() {
+                return ajax('MatureContent/MarkedItems').then(function (rows) {
+                    rows = rows || [];
+                    byId('MatureMarkedCount').textContent = rows.length ? '(' + rows.length + ')' : '';
+                    renderList('MatureMarkedList', rows);
+                });
+            }
+
+            function runSync() {
+                var msg = byId('MatureSyncMsg');
+                msg.textContent = 'Sincronizando…';
+                Dashboard.showLoadingMsg();
+                ajax('MatureContent/Sync', 'POST').then(function (r) {
+                    r = r || {};
+                    msg.textContent = 'Listo — ' + (r.Total || 0) + ' marcados · '
+                        + (r.Discovered || 0) + ' nuevos detectados · '
+                        + (r.Reapplied || 0) + ' re-aplicados · '
+                        + (r.Removed || 0) + ' orphans removed.';
+                    return Promise.all([loadMarked(), loadLibraries()]);
+                }).then(function () { Dashboard.hideLoadingMsg(); })
+                  .catch(function () { msg.textContent = 'Sync failed.'; Dashboard.hideLoadingMsg(); });
+            }
+
+            // ---------------------------------------------------------- libraries + search
+
+            function loadLibraries() {
+                return ajax('Library/VirtualFolders').then(function (folders) {
+                    libraries = (folders || []).map(function (f) {
+                        return { Id: f.ItemId, Name: f.Name, Type: 'Biblioteca', CollectionType: f.CollectionType, Path: (f.Locations || [])[0] || '' };
+                    });
+                    return Promise.all(libraries.map(function (l) {
+                        return ajax('MatureContent/Items/' + l.Id).then(function (s) { l.IsMature = !!(s && s.IsMature); }).catch(function () {});
+                    }));
+                }).then(function () { renderList('MatureLibrariesList', libraries); });
+            }
+
+            function searchItems() {
+                var term = byId('MatureSearchTerm').value.trim();
+                if (!term) { renderList('MatureSearchResults', []); return Promise.resolve(); }
+                Dashboard.showLoadingMsg();
+                var url = 'Items?Recursive=true&Limit=60&SearchTerm=' + encodeURIComponent(term)
+                    + '&Fields=Tags,Path&SortBy=SortName'
+                    + '&IncludeItemTypes=Movie,Series,Season,Episode,BoxSet,MusicAlbum,Book,AudioBook,Folder';
+                return ajax(url).then(function (result) {
+                    renderList('MatureSearchResults', (result && result.Items) || []);
+                    Dashboard.hideLoadingMsg();
+                }).catch(function () { Dashboard.hideLoadingMsg(); });
+            }
+
+            // ---------------------------------------------------------- config load/save
+
+            function load() {
+                Dashboard.showLoadingMsg();
+                return ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                    currentConfig = config || {};
+                    byId('InjectClientScript').checked = currentConfig.InjectClientScript !== false;
+                    byId('ShowToggleForAdministrators').checked = currentConfig.ShowToggleForAdministrators !== false;
+                    byId('ShowToggleForUsers').checked = !!currentConfig.ShowToggleForUsers;
+                    byId('DefaultVisibleWhenToggleHidden').checked = !!currentConfig.DefaultVisibleWhenToggleHidden;
+                    byId('MatureTags').value = (currentConfig.MatureTags || ['mature', '+18']).join(', ');
+                    return Promise.all([loadUsers(), loadMarked(), loadLibraries()]);
+                }).then(function () { Dashboard.hideLoadingMsg(); })
+                  .catch(function () { Dashboard.hideLoadingMsg(); });
+            }
+
+            function collectConfig() {
+                currentConfig.InjectClientScript = byId('InjectClientScript').checked;
+                currentConfig.ShowToggleForAdministrators = byId('ShowToggleForAdministrators').checked;
+                currentConfig.ShowToggleForUsers = byId('ShowToggleForUsers').checked;
+                currentConfig.DefaultVisibleWhenToggleHidden = byId('DefaultVisibleWhenToggleHidden').checked;
+                currentConfig.MatureTags = byId('MatureTags').value.split(',').map(function (t) { return t.trim(); }).filter(Boolean);
+                currentConfig.UserRules = Array.prototype.map.call(page.querySelectorAll('#MatureUsersBody tr'), function (tr) {
+                    return {
+                        UserId: tr.getAttribute('data-user-id'),
+                        ShowToggle: tr.querySelector('.mc-user-toggle').checked,
+                        DefaultVisibleWhenToggleHidden: !!currentConfig.DefaultVisibleWhenToggleHidden
+                    };
+                });
+                return currentConfig;
+            }
+
+            // ---------------------------------------------------------- events
+
+            page.addEventListener('pageshow', load);
+
+            byId('MatureReloadMarked').addEventListener('click', function () { Dashboard.showLoadingMsg(); loadMarked().then(Dashboard.hideLoadingMsg); });
+            byId('MatureSyncButton').addEventListener('click', runSync);
+            byId('MatureSearchButton').addEventListener('click', searchItems);
+            byId('MatureSearchTerm').addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') { e.preventDefault(); searchItems(); }
+            });
+
+            page.addEventListener('change', function (e) {
+                var t = e.target;
+                if (!t) { return; }
+                if (t.classList.contains('mc-item-mature')) {
+                    var row = t.closest('.mc-row');
+                    if (row) { setItemMature(row.getAttribute('data-item-id'), t.checked); }
+                } else if (t.classList.contains('mc-user-visible')) {
+                    var tr = t.closest('tr');
+                    if (tr) { onUserVisibleChange(tr, t.checked); }
+                }
+            });
+
+            byId('MatureContentConfigForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                Dashboard.showLoadingMsg();
+                ApiClient.updatePluginConfiguration(pluginId, collectConfig()).then(function (result) {
+                    return ajax('MatureContent/ApplyDefaults', 'POST').then(function () { return result; });
+                }).then(function (result) {
+                    Dashboard.processPluginConfigurationUpdateResult(result);
+                    return loadUsers();
+                }).catch(function () { Dashboard.hideLoadingMsg(); });
+                return false;
+            });
+        })();
+    </script>
+</div>
+</body>
+</html>

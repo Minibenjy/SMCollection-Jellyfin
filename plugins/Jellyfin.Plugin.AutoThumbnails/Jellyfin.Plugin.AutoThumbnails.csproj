@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Jellyfin.Plugin.AutoThumbnails</RootNamespace>
+    <AssemblyName>Jellyfin.Plugin.AutoThumbnails</AssemblyName>
+    <Version>1.0.0.0</Version>
+    <FileVersion>1.0.0.0</FileVersion>
+
+    <!-- NU1902 (SharpCompress GHSA-6c8g-7p36-r338) is a zip-slip issue in path-based
+         extraction. This plugin never extracts entries to disk by their stored name;
+         it reads a single entry into memory and nothing else. -->
+    <NoWarn>$(NoWarn);NU1902</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Jellyfin.Controller" Version="$(JellyfinControllerVersion)" />
+    <PackageReference Include="Docnet.Core" Version="2.6.0" />
+    <PackageReference Include="SharpCompress" Version="0.41.0" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Configuration\configPage.html" />
+  </ItemGroup>
+
+</Project>

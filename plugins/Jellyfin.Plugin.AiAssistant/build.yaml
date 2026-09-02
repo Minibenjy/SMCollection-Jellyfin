@@ -1,0 +1,20 @@
+---
+name: "AI Assistant"
+guid: "b41b7b06-6a1d-4f2c-9a63-1f0e5c7d8a24"
+version: "0.1.0.0"
+targetAbi: "10.11.0.0"
+framework: "net9.0"
+owner: "Minibenjy"
+category: "General"
+overview: "Bring-your-own-provider AI assistant for your library."
+description: >
+  Adds a conversational assistant to the Jellyfin web client. Each user
+  routes their own AI provider, and the assistant acts strictly inside that
+  user's own library permissions: it can search, recommend from real
+  metadata, build and edit playlists, and mark things watched, but only ever
+  as the person talking to it.
+artifacts:
+  - "Jellyfin.Plugin.AiAssistant.dll"
+changelog: "See CHANGELOG.md in the repository."
+repositoryUrl: "https://github.com/Minibenjy/SMCollection-Jellyfin"
+---

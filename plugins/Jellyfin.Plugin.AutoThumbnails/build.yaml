@@ -1,0 +1,19 @@
+---
+name: "Auto Thumbnails"
+guid: "7c2b9e14-5a83-4d6f-9b21-3e8f4a0c6d75"
+version: "1.0.0.0"
+targetAbi: "10.11.0.0"
+framework: "net9.0"
+owner: "Minibenjy"
+category: "Metadata"
+overview: "Thumbnails for anything that has none, taken from the content itself."
+description: >
+  Generates a thumbnail for items no scraper covered: the first page of a
+  CBZ, CBR, CB7, CBT, PDF or EPUB, a video frame via ffmpeg, or the first
+  child's image for a series, season or collection. Never overwrites artwork
+  that already exists.
+artifacts:
+  - "Jellyfin.Plugin.AutoThumbnails.dll"
+changelog: "See CHANGELOG.md in the repository."
+repositoryUrl: "https://github.com/Minibenjy/SMCollection-Jellyfin"
+---
