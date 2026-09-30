@@ -340,12 +340,19 @@ body.dh-badges .homeSectionsContainer .card[data-type="Episode"]::before {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
   cursor: pointer;
   overflow: hidden;
+  text-decoration: none;
   background-color: #2a2a33;
   transition: transform 0.15s ease;
 }
 
-.dh-channel-card:hover {
+.dh-channel-card:hover,
+.dh-channel-card:focus-visible {
   transform: translateY(-2px);
+}
+
+.dh-channel-card:focus-visible {
+  outline: 2px solid var(--dh-accent, #7c5cff);
+  outline-offset: 2px;
 }
 
 .dh-channel-card .dh-channel-label {
@@ -385,11 +392,25 @@ body.dh-badges .homeSectionsContainer .card[data-type="Episode"]::before {
 }
 
 /* A studio tile with a real logo drops the wash and the text: the logo is the
-   label. Falls back to the coloured, titled tile when nothing is cached. */
+   label. Falls back to the coloured, titled tile when nothing is cached.
+
+   The tile is sized explicitly because its width is otherwise `auto`: a
+   percentage max-width on the image then resolves against a box the image
+   itself is sizing, and the tile grows to the thumbnail's natural ~1000px.
+   The upstream artwork is a 16:9 thumbnail with its own background rather
+   than a transparent logo, so it fills the tile instead of floating in it. */
+/* Height matches a titled tile (104px min-height plus its 1.1rem padding top
+   and bottom, content-box); width is that height at 16:9, the thumbnails'
+   own shape, so nothing gets cropped. */
 .dh-channel-card.dh-has-logo {
+  box-sizing: border-box;
+  height: calc(104px + 2.2rem);
+  aspect-ratio: 16 / 9;
+  width: auto;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
   background: #16161c;
-  align-items: center;
-  justify-content: center;
 }
 
 .dh-channel-card.dh-has-logo::after {
@@ -400,10 +421,14 @@ body.dh-badges .homeSectionsContainer .card[data-type="Episode"]::before {
   display: none;
 }
 
+/* Only studios the server has a logo for get an image at all, so the logo is
+   shown from the start — never `display: none`, which gives a lazy image no
+   layout box and stops the browser from ever fetching it. */
 .dh-channel-card .dh-logo {
-  position: relative;
+  position: absolute;
+  inset: 0;
   z-index: 2;
-  max-width: 72%;
-  max-height: 58%;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }

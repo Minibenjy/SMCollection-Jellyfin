@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -105,6 +106,17 @@ public class DiscoverHomeController : ControllerBase
 
         Response.Headers.CacheControl = "public, max-age=86400";
         return PhysicalFile(path, "image/jpeg");
+    }
+
+    /// <summary>Lists the studios that have a cached logo.</summary>
+    /// <returns>Studio names.</returns>
+    [HttpGet("Art/Studios")]
+    [Authorize]
+    public ActionResult<IReadOnlyList<string>> GetAvailableStudios()
+    {
+        // Short client-side cache: the list only changes when a sync runs.
+        Response.Headers.CacheControl = "private, max-age=600";
+        return Ok(_artwork.GetAvailableStudios());
     }
 
     /// <summary>Runs the artwork sync immediately instead of waiting for the daily task.</summary>

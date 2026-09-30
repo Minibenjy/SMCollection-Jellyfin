@@ -38,7 +38,8 @@ own Studio Images plugin points at, which publishes a flat `thumbs.txt` index of
 
 Only studios present in this library are downloaded, so the cache stays
 proportional to the collection rather than to the upstream index. A studio the
-index doesn't cover simply keeps its coloured tile.
+index doesn't cover simply keeps its coloured, titled tile, and the client
+never requests a logo for it.
 
 Genres are deliberately **not** downloaded. There is no public genre-artwork
 source — Seerr, the design this borrows from, ships a hand-curated mapping of
@@ -92,6 +93,24 @@ or it collapses to zero height.
 `left: 0; right: 0`, sized against the viewport. Offsetting for the sidebar has
 to set `left` on the page itself. The Media Bar hero (`.layout-marquee`) is a
 direct child of `<body>` and needs its own offset again.
+
+**A lazy image needs a layout box.** `loading="lazy"` only fetches an image
+once it is near the viewport — and an image that is `display: none`, or not in
+the document at all, is never near anything. Both "append on load" and "hide
+until load" deadlock: the logo is never fetched, so it never loads. The client
+asks `/DiscoverHome/Art/Studios` which studios have a logo, and only those
+tiles get an image, visible from the start.
+
+**Size the logo tile explicitly.** A tile's width is `auto`, so a percentage
+`max-width` on its image resolves against a box the image itself is sizing, and
+the tile grows to the thumbnail's natural ~1000px. The upstream artwork is a
+16:9 thumbnail with its own background, not a transparent logo, so the tile is
+16:9 at the same height as a titled tile and the image covers it.
+
+**Home state is per container.** Every visit to Home builds a new
+`.homeSectionsContainer`. Ordering counters and the genre/studio cursors are
+kept per container (a `WeakMap`), not globally — a global cursor runs out of
+entries after a few round trips and Home loses its carousels.
 
 **This server's `/Items` caps at 16.** A generic `/Items?Recursive=true` query
 returns at most 16 rows regardless of `Limit` — some other plugin's middleware,

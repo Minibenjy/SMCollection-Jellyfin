@@ -40,6 +40,14 @@ public class StudioArtworkCache
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<StudioArtworkCache> _logger;
 
+    // The daily task and the config page's "Sync artwork now" button both land in
+    // SyncAsync; running them at once would race on the same `.part` files.
+    private readonly SemaphoreSlim _syncLock = new(1, 1);
+
+    private readonly object _availableLock = new();
+    private IReadOnlyList<string>? _available;
+    private DateTime _availableAtUtc;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="StudioArtworkCache"/> class.
     /// </summary>
@@ -89,6 +97,73 @@ public class StudioArtworkCache
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The number of logos held in the cache afterwards.</returns>
     public async Task<int> SyncAsync(IProgress<double> progress, CancellationToken cancellationToken)
+    {
+        await _syncLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var total = await SyncCoreAsync(progress, cancellationToken).ConfigureAwait(false);
+            RecordSync(total);
+            return total;
+        }
+        finally
+        {
+            _syncLock.Release();
+        }
+    }
+
+    /// <summary>
+    /// Lists the studios in this library that have a logo cached.
+    /// </summary>
+    /// <returns>Studio names, in library spelling.</returns>
+    /// <remarks>
+    /// Lets the client ask only for logos that exist, instead of firing one request
+    /// per tile and eating a 404 for every studio the upstream index doesn't cover.
+    /// Held in memory for a while because it walks every studio in the library; a
+    /// sync invalidates it immediately.
+    /// </remarks>
+    public IReadOnlyList<string> GetAvailableStudios()
+    {
+        lock (_availableLock)
+        {
+            if (_available is not null && DateTime.UtcNow - _availableAtUtc < TimeSpan.FromMinutes(30))
+            {
+                return _available;
+            }
+        }
+
+        var available = Directory.Exists(CacheDirectory)
+            ? GetLibraryStudios().Where(name => File.Exists(GetCachePath(name))).ToList()
+            : new List<string>();
+
+        lock (_availableLock)
+        {
+            _available = available;
+            _availableAtUtc = DateTime.UtcNow;
+        }
+
+        return available;
+    }
+
+    private void RecordSync(int total)
+    {
+        lock (_availableLock)
+        {
+            _available = null;
+        }
+
+        // Written here rather than by the scheduled task, so the manual sync
+        // endpoint updates the count and timestamp the config page displays too.
+        var plugin = Plugin.Instance;
+        if (plugin is not null)
+        {
+            plugin.Configuration.CachedLogoCount = total;
+            plugin.Configuration.LastArtworkSyncUtc =
+                DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture);
+            plugin.UpdateConfiguration(plugin.Configuration);
+        }
+    }
+
+    private async Task<int> SyncCoreAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
         var config = Plugin.Config;
         if (!config.EnableStudioLogos)

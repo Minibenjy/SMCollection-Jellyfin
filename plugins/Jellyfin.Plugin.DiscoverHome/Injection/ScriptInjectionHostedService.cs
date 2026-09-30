@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -21,8 +22,13 @@ namespace Jellyfin.Plugin.DiscoverHome.Injection;
 public class ScriptInjectionHostedService : IHostedService
 {
     private const string Marker = "DiscoverHome/ClientScript";
-    private const string ScriptTag =
-        "<script defer=\"defer\" src=\"../DiscoverHome/ClientScript?v=0.1.0\"></script>";
+
+    // The cache-busting query follows the assembly version, so an upgrade can never
+    // ship with a stale `?v=` because someone forgot to bump it by hand.
+    private static readonly string ScriptTag = string.Format(
+        CultureInfo.InvariantCulture,
+        "<script defer=\"defer\" src=\"../DiscoverHome/ClientScript?v={0}\"></script>",
+        typeof(Plugin).Assembly.GetName().Version?.ToString(3) ?? "0");
 
     private readonly IServerApplicationPaths _paths;
     private readonly ILogger<ScriptInjectionHostedService> _logger;

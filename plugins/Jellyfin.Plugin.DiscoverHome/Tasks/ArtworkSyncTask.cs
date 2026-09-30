@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Plugin.DiscoverHome.Artwork;
@@ -50,15 +49,6 @@ public class ArtworkSyncTask : IScheduledTask
     public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
         var total = await _cache.SyncAsync(progress, cancellationToken).ConfigureAwait(false);
-
-        var plugin = Plugin.Instance;
-        if (plugin is not null)
-        {
-            plugin.Configuration.CachedLogoCount = total;
-            plugin.Configuration.LastArtworkSyncUtc =
-                DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture);
-            plugin.UpdateConfiguration(plugin.Configuration);
-        }
 
         progress.Report(100);
         _logger.LogInformation("DiscoverHome: artwork sync complete ({Total} logos cached).", total);

@@ -7,6 +7,27 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Discover Home 0.1.1 — fixes
+
+- Studio logos now actually appear. 0.1.0 only attached the logo once it had
+  loaded, but a lazy image outside the document is never fetched, so no logo was
+  ever shown. The client now asks the new `/DiscoverHome/Art/Studios` endpoint
+  which studios have a cached logo and only requests those, which also removes a
+  404 per uncovered studio. Logo tiles are sized 16:9 at the height of the other
+  tiles instead of growing to the thumbnail's natural width.
+- Genre and studio carousels no longer disappear after returning to Home a few
+  times: ordering state is kept per home screen instead of globally.
+- Pinned rows (My Media, Continue Watching, Next Up) keep their place even when
+  they finish loading after other rows.
+- Genre and studio tiles link to Jellyfin's own genre/studio listing instead of a
+  free-text search, and are real links (middle-click and keyboard work). Both
+  lists are shuffled per session instead of always showing the first names
+  alphabetically, and studios with a logo are shown first.
+- "Sync artwork now" on the config page now updates the logo count and last sync
+  time, which only the scheduled task did before. Concurrent syncs are serialized.
+- The script tag's cache-busting version follows the assembly version instead of
+  being maintained by hand.
+
 ### Discover Home 0.1.0 — new plugin
 
 - Reworks the web client's home screen into a discovery front page: the navigation

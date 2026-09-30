@@ -22,12 +22,22 @@
   var settings = null;
   var mediaQuery = null;
 
-  // Ordering state lives at module scope, not per pass: Jellyfin fills the home
+  // Ordering state is per home container, not per pass: Jellyfin fills the home
   // screen progressively, so later batches must continue the same running order
-  // and the same channel-type rotation instead of restarting from zero.
-  var nextOrder = 0;
-  var lastChannelType = null;
-  var typeCursor = {};
+  // and the same channel-type rotation instead of restarting from zero. But it
+  // must not be global either — every visit to Home builds a new container, and
+  // a cursor carried over from the last visit runs out of genres and studios
+  // after a few round trips, leaving Home with no carousels at all.
+  var homeState = new WeakMap();
+
+  function stateFor(container) {
+    var st = homeState.get(container);
+    if (!st) {
+      st = { nextOrder: 0, lastChannelType: null, typeCursor: {} };
+      homeState.set(container, st);
+    }
+    return st;
+  }
 
   var CHANNEL_PALETTES = {
     genre: ["#c0392b", "#16a085", "#8e44ad", "#2980b9", "#d68910", "#1abc9c", "#7c5cff", "#2c3e50"],
@@ -74,9 +84,11 @@
 
     // Badge text lives in a custom property rather than an attribute so the
     // pills stay pure CSS — no per-card JavaScript on a page full of cards.
-    root.style.setProperty("--dh-label-movie", '"' + (s.LabelMovie || "PELÍCULA") + '"');
-    root.style.setProperty("--dh-label-series", '"' + (s.LabelSeries || "SERIE") + '"');
-    root.style.setProperty("--dh-label-episode", '"' + (s.LabelEpisode || "EPISODIO") + '"');
+    // JSON.stringify quotes and escapes, so a label with a quote or backslash in
+    // it stays a valid CSS string instead of breaking the `content` rule.
+    root.style.setProperty("--dh-label-movie", JSON.stringify(s.LabelMovie || "PELÍCULA"));
+    root.style.setProperty("--dh-label-series", JSON.stringify(s.LabelSeries || "SERIE"));
+    root.style.setProperty("--dh-label-episode", JSON.stringify(s.LabelEpisode || "EPISODIO"));
 
     var body = document.body;
     body.classList.toggle("dh-pin-sidebar", !!s.PinSidebar);
@@ -210,8 +222,14 @@
 
     function run() {
       var q = input.value.trim();
-      if (!q) { suggestBox.hidden = true; return; }
       clearTimeout(suggestDebounce);
+      if (!q) {
+        // Also invalidate any request already in flight, or its answer lands
+        // after the box was cleared and pops the suggestions back open.
+        suggestSeq++;
+        suggestBox.hidden = true;
+        return;
+      }
       suggestDebounce = setTimeout(function () {
         fetchSuggestions(q).then(function (matches) {
           if (matches) renderSuggestions(suggestBox, matches);
@@ -227,7 +245,7 @@
       var q = input.value.trim();
       if (!q) return;
       suggestBox.hidden = true;
-      window.location.hash = "#/search.html?query=" + encodeURIComponent(q);
+      window.location.hash = "#/search?query=" + encodeURIComponent(q);
     });
 
     wrap.appendChild(input);
@@ -237,17 +255,46 @@
 
   // ---------------------------------------------------------------- channels
 
+  // Names of the studios the server holds a logo for. Asked once per page load,
+  // so a tile only ever requests a logo that exists — without this, every studio
+  // the upstream repository doesn't cover cost a request and a 404.
+  var logoNames = null;
+
+  function fetchLogoNames() {
+    if (logoNames) return Promise.resolve(logoNames);
+    var c = client();
+    if (!c || !settings.EnableStudioLogos) return Promise.resolve({});
+    return c.getJSON(c.getUrl("DiscoverHome/Art/Studios"))
+      .then(function (names) {
+        logoNames = {};
+        (names || []).forEach(function (n) { logoNames[n.toLowerCase()] = true; });
+        return logoNames;
+      })
+      .catch(function () { return {}; });
+  }
+
+  function hasLogo(name) {
+    return !!(logoNames && logoNames[name.toLowerCase()]);
+  }
+
+  function toEntries(r) {
+    return (r && r.Items || []).map(function (i) { return { id: i.Id, name: i.Name }; });
+  }
+
   function channelTypes() {
     var types = [];
 
+    // Both lists are shuffled once and cached for the session: an alphabetical
+    // page of 8 would show the same "A…" genres and studios on every visit.
     if (settings.EnableGenreRow) {
       types.push({
         key: "genre",
         heading: "Géneros",
-        cacheKey: "dh_genres_v2",
+        cacheKey: "dh_genres_v3",
+        link: "genreId",
         fetch: function (c) {
-          return c.getGenres(c.getCurrentUserId(), { SortBy: "SortName", Limit: 24 })
-            .then(function (r) { return (r && r.Items || []).map(function (g) { return g.Name; }); });
+          return c.getGenres(c.getCurrentUserId(), { SortBy: "SortName", Recursive: true })
+            .then(function (r) { return shuffle(toEntries(r)); });
         },
         decorate: settings.EnableGenreCollages ? decorateWithCollage : null
       });
@@ -257,10 +304,19 @@
       types.push({
         key: "studio",
         heading: "Estudios",
-        cacheKey: "dh_studios_v2",
+        cacheKey: "dh_studios_v3",
+        link: "studioId",
         fetch: function (c) {
-          return c.getStudios(c.getCurrentUserId(), { SortBy: "SortName", Limit: 24 })
-            .then(function (r) { return (r && r.Items || []).map(function (s) { return s.Name; }); });
+          return Promise.all([
+            c.getStudios(c.getCurrentUserId(), { SortBy: "SortName", Recursive: true }),
+            fetchLogoNames()
+          ]).then(function (res) {
+            // Studios with a real logo first: a row of plain coloured tiles is
+            // the fallback, not the point.
+            var all = shuffle(toEntries(res[0]));
+            return all.filter(function (s) { return hasLogo(s.name); })
+              .concat(all.filter(function (s) { return !hasLogo(s.name); }));
+          });
         },
         decorate: settings.EnableStudioLogos ? decorateWithLogo : null
       });
@@ -282,32 +338,38 @@
   }
 
   // Studio tiles: the logo comes from the plugin's own cache, filled once a day
-  // by the server. A miss is normal — the upstream artwork repository doesn't
-  // cover every studio — so the coloured, titled tile stays as the fallback and
-  // the image is only swapped in once it has actually decoded.
-  function decorateWithLogo(card, name) {
+  // by the server. Only studios on the server's list get an image at all, so
+  // the tile can switch to its logo layout straight away — no hidden image
+  // waiting on a `load` event. (An earlier version hid the image until it
+  // loaded, but a `loading="lazy"` image with `display: none` has no layout
+  // box, so the browser never fetches it and the logo never appears.)
+  function decorateWithLogo(card, entry) {
     var c = client();
-    if (!c) return;
+    if (!c || !hasLogo(entry.name)) return;
 
     var img = new Image();
     img.className = "dh-logo";
-    img.alt = name;
+    img.alt = entry.name;
     img.loading = "lazy";
-    img.addEventListener("load", function () {
-      card.classList.add("dh-has-logo");
-      card.appendChild(img);
+    img.decoding = "async";
+    img.addEventListener("error", function () {
+      // Cache pruned since the list was fetched: fall back to the titled tile.
+      card.classList.remove("dh-has-logo");
+      img.remove();
     });
-    img.src = c.getUrl("DiscoverHome/Art/Studio", { name: name });
+    img.src = c.getUrl("DiscoverHome/Art/Studio", { name: entry.name });
+    card.classList.add("dh-has-logo");
+    card.appendChild(img);
   }
 
   // Genre tiles: a collage of posters drawn from that genre. Composed in the
   // browser from images this server already serves — nothing to download, and
   // it always reflects what is actually in the library.
-  function decorateWithCollage(card, name) {
+  function decorateWithCollage(card, entry) {
     var c = client();
     if (!c) return;
 
-    var cacheKey = "dh_collage_" + name;
+    var cacheKey = "dh_collage_" + entry.id;
     var cached = getCache(cacheKey, CACHE_TTL_MS);
 
     var render = function (ids) {
@@ -317,6 +379,8 @@
       ids.slice(0, 3).forEach(function (id) {
         var img = new Image();
         img.loading = "lazy";
+        img.decoding = "async";
+        img.alt = "";
         img.src = c.getImageUrl(id, { type: "Primary", maxWidth: 180 });
         collage.appendChild(img);
       });
@@ -326,13 +390,14 @@
     if (cached) { render(cached); return; }
 
     c.getItems(c.getCurrentUserId(), {
-      Genres: name,
+      GenreIds: entry.id,
       IncludeItemTypes: "Movie,Series",
       Recursive: true,
       SortBy: "Random",
       Limit: 3,
-      ImageTypeLimit: 1,
-      EnableImageTypes: "Primary"
+      ImageTypes: "Primary",
+      EnableImageTypes: "Primary",
+      ImageTypeLimit: 1
     }).then(function (r) {
       var ids = (r && r.Items || []).map(function (i) { return i.Id; });
       setCache(cacheKey, ids);
@@ -340,8 +405,11 @@
     }).catch(function () { /* a tile without a collage is still a usable tile */ });
   }
 
-  function buildChannelRow(type, names) {
-    if (!names.length) return null;
+  function buildChannelRow(type, entries) {
+    if (!entries.length) return null;
+
+    var c = client();
+    var serverId = c && c.serverId ? c.serverId() : "";
 
     var section = document.createElement("div");
     section.className = "verticalSection dh-channel-section";
@@ -359,21 +427,23 @@
 
     var palette = CHANNEL_PALETTES[type.key] || CHANNEL_PALETTES.genre;
 
-    names.forEach(function (name, i) {
-      var card = document.createElement("div");
+    entries.forEach(function (entry, i) {
+      // A real link rather than a click handler: middle-click, "open in new
+      // tab" and keyboard focus all work, and it goes to the genre or studio
+      // listing itself — the same place Jellyfin's own details page links to —
+      // instead of a free-text search that also matches titles.
+      var card = document.createElement("a");
       card.className = "dh-channel-card";
+      card.href = "#/list?" + type.link + "=" + encodeURIComponent(entry.id) +
+        (serverId ? "&serverId=" + encodeURIComponent(serverId) : "");
       card.style.setProperty("--dh-tint", palette[i % palette.length]);
 
       var label = document.createElement("span");
       label.className = "dh-channel-label";
-      label.textContent = name;
+      label.textContent = entry.name;
       card.appendChild(label);
 
-      card.addEventListener("click", function () {
-        window.location.hash = "#/search.html?query=" + encodeURIComponent(name);
-      });
-
-      if (type.decorate) type.decorate(card, name);
+      if (type.decorate) type.decorate(card, entry);
       row.appendChild(card);
     });
 
@@ -388,11 +458,14 @@
     "My Media", "Continue Watching", "Next Up"
   ];
 
-  function isPinned(section) {
+  function pinnedRank(section) {
     var title = section.querySelector(".sectionTitle, h2");
-    if (!title) return false;
+    if (!title) return -1;
     var text = title.textContent.trim();
-    return PINNED_PREFIXES.some(function (p) { return text.indexOf(p) === 0; });
+    for (var i = 0; i < PINNED_PREFIXES.length; i++) {
+      if (text.indexOf(PINNED_PREFIXES[i]) === 0) return i;
+    }
+    return -1;
   }
 
   function shuffle(arr) {
@@ -427,23 +500,30 @@
     if (!fresh.length) return;
     fresh.forEach(function (s) { s.dataset.dhDone = "1"; });
 
-    var pinned = fresh.filter(isPinned);
-    var rest = fresh.filter(function (s) { return !isPinned(s); });
-    if (settings.ShuffleSections) shuffle(rest);
+    var st = stateFor(container);
+    var rest = [];
 
-    pinned.forEach(function (s) { s.style.order = nextOrder++; });
+    // Pinned rows get a fixed negative order from their place in the list, not
+    // the next running number: "Seguir viendo" is often the slowest row to
+    // arrive, and a running number would drop it below rows that beat it in.
+    fresh.forEach(function (s) {
+      var rank = pinnedRank(s);
+      if (rank >= 0) s.style.order = rank - PINNED_PREFIXES.length;
+      else rest.push(s);
+    });
+    if (settings.ShuffleSections) shuffle(rest);
 
     var types = channelTypes();
     var slots = [];
-    var untilNext = randomGap();
+    if (st.untilNext === undefined) st.untilNext = randomGap();
 
     rest.forEach(function (s) {
-      s.style.order = nextOrder++;
+      s.style.order = st.nextOrder++;
       if (!types.length) return;
-      untilNext--;
-      if (untilNext <= 0) {
-        slots.push(nextOrder++);
-        untilNext = randomGap();
+      st.untilNext--;
+      if (st.untilNext <= 0) {
+        slots.push(st.nextOrder++);
+        st.untilNext = randomGap();
       }
     });
 
@@ -453,26 +533,35 @@
     Promise.all(types.map(function (t) {
       return fetchChannelData(t).then(function (items) { dataByType[t.key] = items; });
     })).then(function () {
+      // Logos are asked for on the genre-only path too, so a studio list
+      // served from sessionStorage still knows which tiles have artwork.
+      return fetchLogoNames();
+    }).then(function () {
       var size = Math.max(1, settings.ChannelRowSize || 8);
 
       slots.forEach(function (slotOrder) {
         // Random type per slot, never the same type twice running — checked
-        // across passes, so a later batch doesn't repeat the previous one.
-        var candidates = types.filter(function (t) { return t.key !== lastChannelType; });
-        if (!candidates.length) candidates = types;
+        // across passes, so a later batch doesn't repeat the previous one. A
+        // type that has run out of fresh entries drops out of the draw instead
+        // of costing the slot.
+        var candidates = types.filter(function (t) {
+          var cursor = st.typeCursor[t.key] || 0;
+          return (dataByType[t.key] || []).length > cursor * size;
+        });
+        var varied = candidates.filter(function (t) { return t.key !== st.lastChannelType; });
+        if (varied.length) candidates = varied;
+        if (!candidates.length) return;
+
         var type = candidates[Math.floor(Math.random() * candidates.length)];
+        var page = st.typeCursor[type.key] || 0;
+        st.typeCursor[type.key] = page + 1;
+        var entries = dataByType[type.key].slice(page * size, page * size + size);
 
-        var items = dataByType[type.key] || [];
-        if (typeCursor[type.key] === undefined) typeCursor[type.key] = 0;
-        var window_ = typeCursor[type.key]++;
-        var names = items.slice(window_ * size, window_ * size + size);
-        if (!names.length) return; // out of fresh data for this type; skip rather than repeat
-
-        var row = buildChannelRow(type, names);
+        var row = buildChannelRow(type, entries);
         if (!row) return;
         row.style.order = slotOrder;
         container.appendChild(row);
-        lastChannelType = type.key;
+        st.lastChannelType = type.key;
       });
     });
   }
