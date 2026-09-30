@@ -433,6 +433,65 @@ body.dh-badges .homeSectionsContainer .card[data-type="Episode"]::before {
   object-fit: cover;
 }
 
+/* ================================================== large desktop */
+
+/* On desktop every row is sized from Jellyfin's own landscape card — the one
+   Continue Watching and My Media use — so the home screen reads as one grid
+   instead of big landscape rows over small posters. That width is a vw value
+   that Jellyfin changes at 100em, mirrored here; everything else is derived
+   from it, so it stays proportional at any desktop resolution. `dh-wide` is
+   the configured sidebar breakpoint; below it the compact sizes apply. */
+:root {
+  --dh-backdrop-w: 23.1vw;
+  --dh-card-spacing: 1.1em;
+}
+
+@media (min-width: 100em) {
+  :root {
+    --dh-backdrop-w: 18.7vw;
+  }
+}
+
+/* Posters: ~0.71 of a landscape card, which makes a poster about 1.9x as tall
+   as the Continue Watching thumbnails. Out-specifies the compact width rule. */
+body.dh-large-desktop.dh-wide .homeSectionsContainer .card.overflowPortraitCard {
+  width: calc(var(--dh-backdrop-w) * 0.71) !important;
+}
+
+body.dh-large-desktop.dh-wide .homeSectionsContainer .cardText {
+  font-size: 0.95rem;
+  line-height: 1.3;
+}
+
+body.dh-large-desktop.dh-wide .homeSectionsContainer .cardText-secondary {
+  font-size: 0.82rem;
+}
+
+/* Genre and studio tiles: exactly a landscape card — same width minus the
+   spacing Jellyfin's cardBox leaves on its right, same 16:9 shape. */
+body.dh-large-desktop.dh-wide .dh-channel-row {
+  gap: var(--dh-card-spacing);
+}
+
+body.dh-large-desktop.dh-wide .dh-channel-card,
+body.dh-large-desktop.dh-wide .dh-channel-card.dh-has-logo {
+  box-sizing: border-box;
+  width: calc(var(--dh-backdrop-w) - var(--dh-card-spacing));
+  height: auto;
+  aspect-ratio: 16 / 9;
+  min-width: 0;
+  min-height: 0;
+}
+
+body.dh-large-desktop.dh-wide .dh-channel-card {
+  padding: 1.25rem 1.4rem;
+  font-size: 1.35rem;
+}
+
+body.dh-large-desktop.dh-wide .dh-channel-card.dh-has-logo {
+  padding: 0;
+}
+
 /* ================================================== compatibility */
 
 /* KefinTweaks always adds its discovery "Loading..." indicator to the bottom of

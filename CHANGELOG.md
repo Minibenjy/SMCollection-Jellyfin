@@ -7,6 +7,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Discover Home 0.1.3 — large cards on desktop
+
+- New "Large cards on desktop" option, on by default. Above the sidebar
+  breakpoint, poster rows are sized from Jellyfin's own landscape card (Continue
+  Watching, My Media): posters at ~0.71 of its width (237×356 on a 1920px
+  screen, up from 130×168), and genre/studio tiles at exactly its width and
+  16:9 shape. Everything is derived from the same vw value Jellyfin uses, so it
+  stays proportional at any desktop resolution. Narrow screens keep the compact
+  sizes.
+
 ### Discover Home 0.1.2 — fixes
 
 - Hides the permanent "Loading..." KefinTweaks leaves at the bottom of Home when

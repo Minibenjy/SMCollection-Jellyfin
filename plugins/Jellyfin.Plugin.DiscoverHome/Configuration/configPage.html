@@ -83,7 +83,15 @@
         <div class="inputContainer">
           <label class="inputLabel inputLabelUnfocused" for="cardWidth">Card width</label>
           <input is="emby-input" type="number" id="cardWidth" min="80" max="320" />
-          <div class="fieldDescription">Width in pixels of a poster card on the home screen.</div>
+          <div class="fieldDescription">Width in pixels of a poster card on the home screen. On desktop this is overridden by the option below.</div>
+        </div>
+
+        <div class="checkboxContainer checkboxContainer-withDescription">
+          <label class="emby-checkbox-label">
+            <input is="emby-checkbox" type="checkbox" id="largeDesktopCards" />
+            <span>Large cards on desktop</span>
+          </label>
+          <div class="fieldDescription checkboxFieldDescription">Above the sidebar breakpoint, posters and the genre/studio tiles are sized to match Continue Watching and My Media.</div>
         </div>
 
         <div class="checkboxContainer">
@@ -222,7 +230,7 @@
 
       var BOOLEANS = [
         'injectClientScript', 'pinSidebar', 'reorderSidebar', 'logoInSidebar',
-        'centeredSearch', 'hideRandomButton', 'compactCards', 'showTypeBadges',
+        'centeredSearch', 'hideRandomButton', 'compactCards', 'largeDesktopCards', 'showTypeBadges',
         'shuffleSections', 'enableGenreRow', 'enableStudioRow',
         'enableStudioLogos', 'enableGenreCollages'
       ];

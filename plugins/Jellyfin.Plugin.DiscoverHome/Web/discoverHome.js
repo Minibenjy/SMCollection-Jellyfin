@@ -97,6 +97,7 @@
     body.classList.toggle("dh-centered-search", !!s.CenteredSearch);
     body.classList.toggle("dh-hide-random", !!s.HideRandomButton);
     body.classList.toggle("dh-compact-cards", !!s.CompactCards);
+    body.classList.toggle("dh-large-desktop", !!s.LargeDesktopCards);
     body.classList.toggle("dh-badges", !!s.ShowTypeBadges);
 
     // A media query can't read a custom property, so the configured breakpoint

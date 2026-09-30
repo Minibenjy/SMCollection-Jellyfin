@@ -121,7 +121,7 @@ Jellyfin's own indexed search endpoint and has no such ceiling.
 
 Layout: enable/disable, pin sidebar, breakpoint, reorder sidebar, logo in
 sidebar, centered search, hide random button.
-Cards: compact cards, card width, type pills, accent colour, pill text per type.
+Cards: compact cards, card width, large cards on desktop, type pills, accent colour, pill text per type.
 Rows: shuffle, genre row, studio row, min/max gap, tiles per carousel.
 Artwork: studio logos on/off, repository URL, genre collages on/off, plus the
 last sync time and cached logo count with a manual **Sync artwork now** button.

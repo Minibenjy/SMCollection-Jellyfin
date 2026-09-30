@@ -64,6 +64,7 @@ public class DiscoverHomeController : ControllerBase
             c.HideRandomButton,
             c.CompactCards,
             c.CardWidth,
+            c.LargeDesktopCards,
             c.ShowTypeBadges,
             c.AccentColor,
             c.LabelMovie,

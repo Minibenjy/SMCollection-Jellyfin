@@ -44,6 +44,13 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Gets or sets the width, in pixels, of a compacted poster card.</summary>
     public int CardWidth { get; set; } = 130;
 
+    /// <summary>
+    /// Gets or sets a value indicating whether, above the sidebar breakpoint, poster cards
+    /// and the genre/studio tiles are scaled to Jellyfin's own landscape cards
+    /// (Continue Watching, My Media) instead of <see cref="CardWidth"/>.
+    /// </summary>
+    public bool LargeDesktopCards { get; set; } = true;
+
     /// <summary>Gets or sets a value indicating whether a media-type pill is drawn on each card.</summary>
     public bool ShowTypeBadges { get; set; } = true;
 
