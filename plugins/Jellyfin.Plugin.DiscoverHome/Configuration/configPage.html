@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Discover Home</title>
+</head>
+<body>
+<div id="discoverHomeConfigPage" data-role="page" class="page type-interior pluginConfigurationPage">
+  <div data-role="content">
+    <div class="content-primary">
+      <form id="discoverHomeConfigForm">
+
+        <div class="checkboxContainer checkboxContainer-withDescription">
+          <label class="emby-checkbox-label">
+            <input is="emby-checkbox" type="checkbox" id="injectClientScript" />
+            <span>Enable Discover Home</span>
+          </label>
+          <div class="fieldDescription checkboxFieldDescription">
+            Adds the client script to the web client. Turning this off removes it again
+            and leaves Jellyfin's stock home screen untouched — no need to uninstall.
+            Takes effect after a server restart.
+          </div>
+        </div>
+
+        <h2>Layout</h2>
+
+        <div class="checkboxContainer">
+          <label class="emby-checkbox-label">
+            <input is="emby-checkbox" type="checkbox" id="pinSidebar" />
+            <span>Keep the sidebar open on desktop</span>
+          </label>
+        </div>
+
+        <div class="inputContainer">
+          <label class="inputLabel inputLabelUnfocused" for="sidebarBreakpoint">Sidebar breakpoint</label>
+          <input is="emby-input" type="number" id="sidebarBreakpoint" min="600" max="2400" />
+          <div class="fieldDescription">
+            Viewport width in pixels at or above which the sidebar stays pinned. Below it,
+            Jellyfin's normal hamburger drawer is used.
+          </div>
+        </div>
+
+        <div class="checkboxContainer">
+          <label class="emby-checkbox-label">
+            <input is="emby-checkbox" type="checkbox" id="reorderSidebar" />
+            <span>Reorder the sidebar (libraries first)</span>
+          </label>
+        </div>
+
+        <div class="checkboxContainer">
+          <label class="emby-checkbox-label">
+            <input is="emby-checkbox" type="checkbox" id="logoInSidebar" />
+            <span>Move the logo into the sidebar</span>
+          </label>
+        </div>
+
+        <div class="checkboxContainer checkboxContainer-withDescription">
+          <label class="emby-checkbox-label">
+            <input is="emby-checkbox" type="checkbox" id="centeredSearch" />
+            <span>Centered search box in the header</span>
+          </label>
+          <div class="fieldDescription checkboxFieldDescription">
+            Replaces the header's Home/Favourites tabs, which duplicate the sidebar once
+            it is pinned.
+          </div>
+        </div>
+
+        <div class="checkboxContainer">
+          <label class="emby-checkbox-label">
+            <input is="emby-checkbox" type="checkbox" id="hideRandomButton" />
+            <span>Hide the random-item button</span>
+          </label>
+        </div>
+
+        <h2>Cards</h2>
+
+        <div class="checkboxContainer">
+          <label class="emby-checkbox-label">
+            <input is="emby-checkbox" type="checkbox" id="compactCards" />
+            <span>Compact poster cards</span>
+          </label>
+        </div>
+
+        <div class="inputContainer">
+          <label class="inputLabel inputLabelUnfocused" for="cardWidth">Card width</label>
+          <input is="emby-input" type="number" id="cardWidth" min="80" max="320" />
+          <div class="fieldDescription">Width in pixels of a poster card on the home screen.</div>
+        </div>
+
+        <div class="checkboxContainer">
+          <label class="emby-checkbox-label">
+            <input is="emby-checkbox" type="checkbox" id="showTypeBadges" />
+            <span>Show a media-type pill on each card</span>
+          </label>
+        </div>
+
+        <div class="inputContainer">
+          <label class="inputLabel inputLabelUnfocused" for="accentColor">Accent colour</label>
+          <input is="emby-input" type="text" id="accentColor" placeholder="#7c5cff" />
+          <div class="fieldDescription">Any CSS colour. Used for highlights, pills and the active sidebar row.</div>
+        </div>
+
+        <div class="inputContainer">
+          <label class="inputLabel inputLabelUnfocused" for="labelMovie">Pill text — movie</label>
+          <input is="emby-input" type="text" id="labelMovie" />
+        </div>
+
+        <div class="inputContainer">
+          <label class="inputLabel inputLabelUnfocused" for="labelSeries">Pill text — series</label>
+          <input is="emby-input" type="text" id="labelSeries" />
+        </div>
+
+        <div class="inputContainer">
+          <label class="inputLabel inputLabelUnfocused" for="labelEpisode">Pill text — episode</label>
+          <input is="emby-input" type="text" id="labelEpisode" />
+        </div>
+
+        <h2>Rows</h2>
+
+        <div class="checkboxContainer checkboxContainer-withDescription">
+          <label class="emby-checkbox-label">
+            <input is="emby-checkbox" type="checkbox" id="shuffleSections" />
+            <span>Shuffle the home rows on each load</span>
+          </label>
+          <div class="fieldDescription checkboxFieldDescription">
+            "Continue watching" and the library shortcuts always stay at the top.
+          </div>
+        </div>
+
+        <div class="checkboxContainer">
+          <label class="emby-checkbox-label">
+            <input is="emby-checkbox" type="checkbox" id="enableGenreRow" />
+            <span>Insert genre carousels</span>
+          </label>
+        </div>
+
+        <div class="checkboxContainer">
+          <label class="emby-checkbox-label">
+            <input is="emby-checkbox" type="checkbox" id="enableStudioRow" />
+            <span>Insert studio carousels</span>
+          </label>
+        </div>
+
+        <div class="inputContainer">
+          <label class="inputLabel inputLabelUnfocused" for="minRowGap">Smallest gap</label>
+          <input is="emby-input" type="number" id="minRowGap" min="1" max="10" />
+          <div class="fieldDescription">Fewest native rows between two inserted carousels.</div>
+        </div>
+
+        <div class="inputContainer">
+          <label class="inputLabel inputLabelUnfocused" for="maxRowGap">Largest gap</label>
+          <input is="emby-input" type="number" id="maxRowGap" min="1" max="10" />
+          <div class="fieldDescription">
+            Most native rows between two inserted carousels. The gap is picked at random
+            between the two on every load.
+          </div>
+        </div>
+
+        <div class="inputContainer">
+          <label class="inputLabel inputLabelUnfocused" for="channelRowSize">Tiles per carousel</label>
+          <input is="emby-input" type="number" id="channelRowSize" min="4" max="24" />
+        </div>
+
+        <h2>Artwork</h2>
+
+        <div class="checkboxContainer checkboxContainer-withDescription">
+          <label class="emby-checkbox-label">
+            <input is="emby-checkbox" type="checkbox" id="enableStudioLogos" />
+            <span>Use downloaded studio logos</span>
+          </label>
+          <div class="fieldDescription checkboxFieldDescription">
+            Jellyfin ships no studio artwork of its own, so logos are fetched once a day
+            from a public community repository — only for studios this library actually
+            contains. A studio with no logo upstream keeps its coloured tile.
+          </div>
+        </div>
+
+        <div class="inputContainer">
+          <label class="inputLabel inputLabelUnfocused" for="studioArtworkRepository">Artwork repository</label>
+          <input is="emby-input" type="text" id="studioArtworkRepository" />
+          <div class="fieldDescription">
+            Expects <code>{base}/thumbs.txt</code> as the index and
+            <code>{base}/images/{studio}/thumb.jpg</code> for each logo.
+          </div>
+        </div>
+
+        <div class="checkboxContainer checkboxContainer-withDescription">
+          <label class="emby-checkbox-label">
+            <input is="emby-checkbox" type="checkbox" id="enableGenreCollages" />
+            <span>Collage backgrounds on genre tiles</span>
+          </label>
+          <div class="fieldDescription checkboxFieldDescription">
+            Built in the browser from posters already in that genre, so there is nothing
+            to download and nothing to keep in sync.
+          </div>
+        </div>
+
+        <div class="fieldDescription" style="margin: 1em 0;">
+          <span id="artworkStatus">Artwork status unknown.</span>
+        </div>
+
+        <button is="emby-button" type="button" id="syncArtwork" class="raised">
+          <span>Sync artwork now</span>
+        </button>
+
+        <br />
+        <br />
+
+        <button is="emby-button" type="submit" class="raised button-submit block">
+          <span>Save</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    (function () {
+      var PLUGIN_ID = 'c3f7a1d8-5b42-4e69-9a0c-7d1e8f3b2a56';
+
+      function page() {
+        return document.querySelector('#discoverHomeConfigPage');
+      }
+
+      var BOOLEANS = [
+        'injectClientScript', 'pinSidebar', 'reorderSidebar', 'logoInSidebar',
+        'centeredSearch', 'hideRandomButton', 'compactCards', 'showTypeBadges',
+        'shuffleSections', 'enableGenreRow', 'enableStudioRow',
+        'enableStudioLogos', 'enableGenreCollages'
+      ];
+
+      var NUMBERS = [
+        'sidebarBreakpoint', 'cardWidth', 'minRowGap', 'maxRowGap', 'channelRowSize'
+      ];
+
+      var STRINGS = [
+        'accentColor', 'labelMovie', 'labelSeries', 'labelEpisode',
+        'studioArtworkRepository'
+      ];
+
+      // The form ids are the configuration property names with a lower-case
+      // first letter, so the mapping needs no lookup table.
+      function prop(id) {
+        return id.charAt(0).toUpperCase() + id.slice(1);
+      }
+
+      function describeArtwork(config) {
+        var el = page().querySelector('#artworkStatus');
+        if (!config.LastArtworkSyncUtc) {
+          el.textContent = 'No artwork sync has run yet. It runs daily, or press the button below.';
+          return;
+        }
+        var when = new Date(config.LastArtworkSyncUtc);
+        el.textContent = config.CachedLogoCount + ' studio logos cached. Last sync: ' +
+          when.toLocaleString() + '.';
+      }
+
+      function load() {
+        Dashboard.showLoadingMsg();
+        ApiClient.getPluginConfiguration(PLUGIN_ID).then(function (config) {
+          var p = page();
+          BOOLEANS.forEach(function (id) { p.querySelector('#' + id).checked = !!config[prop(id)]; });
+          NUMBERS.forEach(function (id) { p.querySelector('#' + id).value = config[prop(id)]; });
+          STRINGS.forEach(function (id) { p.querySelector('#' + id).value = config[prop(id)] || ''; });
+          describeArtwork(config);
+          Dashboard.hideLoadingMsg();
+        });
+      }
+
+      function save(e) {
+        e.preventDefault();
+        Dashboard.showLoadingMsg();
+
+        ApiClient.getPluginConfiguration(PLUGIN_ID).then(function (config) {
+          var p = page();
+          BOOLEANS.forEach(function (id) { config[prop(id)] = p.querySelector('#' + id).checked; });
+          NUMBERS.forEach(function (id) { config[prop(id)] = parseInt(p.querySelector('#' + id).value, 10); });
+          STRINGS.forEach(function (id) { config[prop(id)] = p.querySelector('#' + id).value.trim(); });
+
+          ApiClient.updatePluginConfiguration(PLUGIN_ID, config).then(function (result) {
+            Dashboard.processPluginConfigurationUpdateResult(result);
+          });
+        });
+
+        return false;
+      }
+
+      function syncNow() {
+        Dashboard.showLoadingMsg();
+        ApiClient.ajax({
+          type: 'POST',
+          url: ApiClient.getUrl('DiscoverHome/Admin/SyncArtwork'),
+          dataType: 'json'
+        }).then(function () {
+          // Re-read rather than trusting the response: the task writes the count
+          // and timestamp back into the configuration, and that is what the page
+          // should display.
+          return ApiClient.getPluginConfiguration(PLUGIN_ID).then(describeArtwork);
+        }).catch(function () {
+          page().querySelector('#artworkStatus').textContent =
+            'The artwork sync failed. Check the server log for details.';
+        }).then(function () {
+          Dashboard.hideLoadingMsg();
+        });
+      }
+
+      document.querySelector('#discoverHomeConfigPage')
+        .addEventListener('viewshow', load);
+      document.querySelector('#discoverHomeConfigForm')
+        .addEventListener('submit', save);
+      document.querySelector('#syncArtwork')
+        .addEventListener('click', syncNow);
+    })();
+  </script>
+</div>
+</body>
+</html>

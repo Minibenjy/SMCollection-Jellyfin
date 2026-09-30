@@ -1,0 +1,409 @@
+/*
+ * DiscoverHome — a discovery-style layer over Jellyfin's home screen.
+ *
+ * Served by the plugin at /DiscoverHome/Style and linked by discoverHome.js.
+ *
+ * Two conventions run through this file:
+ *   - Anything the administrator can change is a custom property on :root,
+ *     written by the client script from the plugin configuration. Nothing
+ *     configurable is hardcoded here.
+ *   - Anything the administrator can switch off is gated behind a class on
+ *     <body>, so turning a feature off removes its rules entirely rather than
+ *     leaving them to fight with Jellyfin's own.
+ */
+
+:root {
+  --dh-radius: 10px;
+  --dh-gap: 0.6rem;
+  --dh-accent: #7c5cff;
+  --dh-card-w: 130px;
+  --dh-drawer-w: 320px;
+}
+
+/* ================================================================ sidebar */
+
+/* Jellyfin's drawer is an overlay: position:fixed, parked off-canvas at
+   `left: -320px`, revealed by adding `drawer-open`. There is no "pinned rail"
+   mode, so we build one — force it on-screen and give the header and page a
+   matching offset. `dh-wide` is set by the script from the configured
+   breakpoint (a media query can't read a custom property). Scoped to the home
+   screen: the detail and player pages have not been audited for this. */
+body.dh-pin-sidebar.dh-wide.home-screen .mainDrawer {
+  left: 0 !important;
+  box-shadow: none !important;
+}
+
+body.dh-pin-sidebar.dh-wide.home-screen .skinHeader {
+  margin-left: var(--dh-drawer-w);
+}
+
+/* `.mainAnimatedPages` is position:static, so a margin on it does nothing for
+   its `.page` children — those are position:absolute with `left:0; right:0`,
+   sized against the viewport rather than the parent box. Offset the page. */
+body.dh-pin-sidebar.dh-wide.home-screen .mainAnimatedPages > .page {
+  left: var(--dh-drawer-w) !important;
+}
+
+/* The Media Bar plugin's hero carousel is a direct child of <body>, outside
+   `.mainAnimatedPages` entirely, so it needs its own offset or its title and
+   play button sit underneath the sidebar. */
+body.dh-pin-sidebar.dh-wide.home-screen > .layout-marquee {
+  left: var(--dh-drawer-w) !important;
+  width: calc(100% - var(--dh-drawer-w)) !important;
+}
+
+/* With the drawer permanently open, its toggle and scrim have nothing to do. */
+body.dh-pin-sidebar.dh-wide.home-screen .mainDrawerButton,
+body.dh-pin-sidebar.dh-wide.home-screen .mainDrawer ~ .dialogContainer .dialogBackdrop {
+  display: none !important;
+}
+
+/* The logo moves into the drawer, so hide the header's copy. `.pageTitle` has
+   empty markup and draws its logo purely from a background-image, which is why
+   the script clones the computed image onto a fresh element rather than moving
+   this one. */
+body.dh-logo-sidebar .headerLeft .pageTitle.pageTitleWithLogo {
+  visibility: hidden;
+}
+
+.dh-sidebar-logo {
+  width: 180px;
+  height: 44px;
+  margin: 1.5rem auto 1rem;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  order: -1;
+  /* The scroll container is a flex column whose content overflows, so a
+     shrinkable item gets squashed — this collapsed to height 0 without it. */
+  flex-shrink: 0;
+}
+
+/* Flex column so the nav groups can be reordered with `order` alone. Jellyfin
+   rebuilds this list on navigation, so moving the nodes would be undone. */
+body.dh-reorder-sidebar .mainDrawer-scrollContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Libraries first — that's what actually gets clicked — then tools, then
+   administration, then the account. */
+body.dh-reorder-sidebar .mainDrawer-scrollContainer > .navMenuOption { order: 1; }
+body.dh-reorder-sidebar .libraryMenuOptions { order: 2; }
+body.dh-reorder-sidebar .jellyfinEnhancedSection { order: 3; }
+body.dh-reorder-sidebar .adminMenuOptions { order: 4; }
+body.dh-reorder-sidebar .userMenuOptions { order: 5; }
+
+.mainDrawer-scrollContainer {
+  padding: 0 0.75rem 1.5rem;
+}
+
+/* Covers Jellyfin's own `.sidebarHeader` and the bare <h3> other plugins drop
+   into their nav groups, so every group header in the drawer reads the same. */
+.mainDrawer .sidebarHeader,
+.mainDrawer-scrollContainer h3 {
+  margin: 1.35rem 0 0.4rem;
+  padding: 0 0.75rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  opacity: 0.42;
+}
+
+.mainDrawer .navMenuOption {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  height: 40px;
+  min-height: 40px;
+  margin: 1px 0;
+  padding: 0 0.75rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.mainDrawer .navMenuOption:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.mainDrawer .navMenuOption-selected,
+.mainDrawer .navMenuOption-selected:hover {
+  background: color-mix(in srgb, var(--dh-accent) 20%, transparent);
+  color: #fff;
+}
+
+.mainDrawer .navMenuOption-selected .navMenuOptionIcon {
+  color: var(--dh-accent);
+  opacity: 1;
+}
+
+.mainDrawer .navMenuOptionIcon {
+  margin: 0;
+  width: 1.5rem;
+  font-size: 1.3rem;
+  text-align: center;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.mainDrawer .navMenuOptionText {
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ================================================================ header */
+
+body.dh-hide-random #randomItemButton {
+  display: none !important;
+}
+
+/* The header's own Home/Favourites entries duplicate the sidebar once it is
+   pinned, and the text tabs (a separate native element from the icon buttons)
+   overlap the centered search box. */
+body.dh-centered-search .headerTop .headerHomeButton,
+body.dh-centered-search .headerTop .headerFavoritesButton,
+body.dh-centered-search .headerTop .headerWatchlistButton,
+body.dh-centered-search .skinHeader > .headerTabs.sectionTabs {
+  display: none !important;
+}
+
+/* Absolutely centered rather than flex-centered: the icon buttons either side
+   come and go with other plugins, and a flex centre would drift with them. */
+.dh-topbar-search {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(480px, 40vw);
+  z-index: 5;
+}
+
+.dh-topbar-search input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  color: inherit;
+  font: inherit;
+}
+
+.dh-topbar-search input:focus {
+  outline: 2px solid var(--dh-accent);
+  outline-offset: -1px;
+}
+
+.dh-suggestions {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #1c1c1c;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.dh-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.dh-suggestion:hover,
+.dh-suggestion.dh-active {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.dh-suggestion .dh-suggestion-type {
+  font-size: 0.65rem;
+  opacity: 0.55;
+  text-transform: uppercase;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* ================================================================ rows */
+
+/* Ordering is done with `order`, never by moving nodes: Jellyfin's rows are
+   `emby-scroller` custom elements, and re-parenting one fires its attach and
+   detach callbacks, which breaks its horizontal scrolling. */
+.homeSectionsContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.dh-channel-section {
+  order: var(--dh-order, 0);
+}
+
+/* ================================================================ cards */
+
+/* Jellyfin sizes poster cards with a fixed width on `.overflowPortraitCard`
+   and exposes no variable to hook into, so this overrides it directly.
+   Backdrop-shaped cards (the library shortcut row) are deliberately left. */
+body.dh-compact-cards .homeSectionsContainer .card.overflowPortraitCard {
+  width: var(--dh-card-w) !important;
+}
+
+.homeSectionsContainer .cardBox {
+  border-radius: var(--dh-radius);
+  overflow: hidden;
+}
+
+body.dh-compact-cards .homeSectionsContainer .cardText {
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+body.dh-compact-cards .homeSectionsContainer .cardText-secondary {
+  font-size: 0.7rem;
+  opacity: 0.65;
+}
+
+/* Jellyfin already puts the media type on every card as `data-type`, so the
+   pill is drawn from the attribute and costs no per-card JavaScript. */
+body.dh-badges .homeSectionsContainer .card[data-type]::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 3;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  background: rgba(20, 20, 25, 0.75);
+  color: #fff;
+  backdrop-filter: blur(2px);
+}
+
+body.dh-badges .homeSectionsContainer .card[data-type="Movie"]::before {
+  content: var(--dh-label-movie, "MOVIE");
+  background: var(--dh-accent);
+}
+
+body.dh-badges .homeSectionsContainer .card[data-type="Series"]::before {
+  content: var(--dh-label-series, "SERIES");
+  background: #ff5c9e;
+}
+
+body.dh-badges .homeSectionsContainer .card[data-type="Episode"]::before {
+  content: var(--dh-label-episode, "EPISODE");
+  background: #ff5c9e;
+}
+
+/* ================================================== genre / studio rows */
+
+/* Same shape as a native row (heading plus one scrolling strip). The left
+   gutter comes from Jellyfin's own `padded-left`, applied in the script, so
+   it stays aligned at any width — that gutter is a percentage, not a fixed
+   length, so no constant here could match it. Never set padding-left. */
+.dh-channel-row {
+  display: flex;
+  gap: var(--dh-gap);
+  margin: 0 0 1.5rem;
+  padding-right: var(--dh-gap);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+/* No scroll-snap: with `scroll-snap-align` on the tiles the browser snapped
+   the first one to the scrollport edge on load, setting scrollLeft to exactly
+   the gutter width and cancelling it out. Native rows don't snap either. */
+.dh-channel-row::-webkit-scrollbar {
+  display: none;
+}
+
+.dh-channel-card {
+  position: relative;
+  border-radius: var(--dh-radius);
+  padding: 1.1rem 1rem;
+  min-width: 190px;
+  min-height: 104px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-end;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  overflow: hidden;
+  background-color: #2a2a33;
+  transition: transform 0.15s ease;
+}
+
+.dh-channel-card:hover {
+  transform: translateY(-2px);
+}
+
+.dh-channel-card .dh-channel-label {
+  position: relative;
+  z-index: 2;
+}
+
+/* Collage of posters from the genre itself, behind a wash of the tile colour.
+   Built from images this server already serves, so there is nothing to
+   download and it always reflects the actual library. */
+.dh-channel-card .dh-collage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  z-index: 0;
+  opacity: 0.55;
+}
+
+.dh-channel-card .dh-collage img {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dh-channel-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--dh-tint, #444) 75%, transparent),
+    rgba(0, 0, 0, 0.55)
+  );
+  pointer-events: none;
+}
+
+/* A studio tile with a real logo drops the wash and the text: the logo is the
+   label. Falls back to the coloured, titled tile when nothing is cached. */
+.dh-channel-card.dh-has-logo {
+  background: #16161c;
+  align-items: center;
+  justify-content: center;
+}
+
+.dh-channel-card.dh-has-logo::after {
+  background: none;
+}
+
+.dh-channel-card.dh-has-logo .dh-channel-label {
+  display: none;
+}
+
+.dh-channel-card .dh-logo {
+  position: relative;
+  z-index: 2;
+  max-width: 72%;
+  max-height: 58%;
+  object-fit: contain;
+}

@@ -1,0 +1,23 @@
+---
+name: "Discover Home"
+guid: "c3f7a1d8-5b42-4e69-9a0c-7d1e8f3b2a56"
+version: "0.1.0.0"
+targetAbi: "10.11.0.0"
+framework: "net9.0"
+owner: "Minibenjy"
+category: "General"
+overview: "A discovery-style home screen for the Jellyfin web client."
+description: >
+  Restyles the Jellyfin home screen into something closer to a discovery
+  front page: a sidebar pinned open on desktop, a centered search box with
+  live suggestions, denser poster cards, and genre and studio carousels
+  shuffled in between Jellyfin's own rows on every load. Studio logos are
+  fetched once a day from a public artwork repository, and genre tiles are
+  backed by a collage of posters already in that genre. Everything is
+  presentation only — it reorders and restyles what Jellyfin already
+  rendered for a user and never changes what they can see.
+artifacts:
+  - "Jellyfin.Plugin.DiscoverHome.dll"
+changelog: "See CHANGELOG.md in the repository."
+repositoryUrl: "https://github.com/Minibenjy/SMCollection-Jellyfin"
+---

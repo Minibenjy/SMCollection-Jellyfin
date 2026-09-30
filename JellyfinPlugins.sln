@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Plugin.AiAssistant
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Plugin.AutoThumbnails.TestHarness", "tests\Jellyfin.Plugin.AutoThumbnails.TestHarness\Jellyfin.Plugin.AutoThumbnails.TestHarness.csproj", "{BDAE2FC4-6809-4F5A-9C9A-FB79A4AFFD5F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Plugin.DiscoverHome", "plugins\Jellyfin.Plugin.DiscoverHome\Jellyfin.Plugin.DiscoverHome.csproj", "{49F7E060-3B10-4755-9B90-DD6303D1216C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -115,6 +117,18 @@ Global
 		{BDAE2FC4-6809-4F5A-9C9A-FB79A4AFFD5F}.Release|x64.Build.0 = Release|Any CPU
 		{BDAE2FC4-6809-4F5A-9C9A-FB79A4AFFD5F}.Release|x86.ActiveCfg = Release|Any CPU
 		{BDAE2FC4-6809-4F5A-9C9A-FB79A4AFFD5F}.Release|x86.Build.0 = Release|Any CPU
+		{49F7E060-3B10-4755-9B90-DD6303D1216C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49F7E060-3B10-4755-9B90-DD6303D1216C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49F7E060-3B10-4755-9B90-DD6303D1216C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{49F7E060-3B10-4755-9B90-DD6303D1216C}.Debug|x64.Build.0 = Debug|Any CPU
+		{49F7E060-3B10-4755-9B90-DD6303D1216C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{49F7E060-3B10-4755-9B90-DD6303D1216C}.Debug|x86.Build.0 = Debug|Any CPU
+		{49F7E060-3B10-4755-9B90-DD6303D1216C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49F7E060-3B10-4755-9B90-DD6303D1216C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49F7E060-3B10-4755-9B90-DD6303D1216C}.Release|x64.ActiveCfg = Release|Any CPU
+		{49F7E060-3B10-4755-9B90-DD6303D1216C}.Release|x64.Build.0 = Release|Any CPU
+		{49F7E060-3B10-4755-9B90-DD6303D1216C}.Release|x86.ActiveCfg = Release|Any CPU
+		{49F7E060-3B10-4755-9B90-DD6303D1216C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -127,5 +141,6 @@ Global
 		{EB040DFF-EADA-4336-B60A-6E52E5830A68} = {07D57EEB-2F50-60C4-C011-FE4FA775C9A8}
 		{7DF29364-46CF-4C32-B438-B8651F571B66} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{BDAE2FC4-6809-4F5A-9C9A-FB79A4AFFD5F} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{49F7E060-3B10-4755-9B90-DD6303D1216C} = {07D57EEB-2F50-60C4-C011-FE4FA775C9A8}
 	EndGlobalSection
 EndGlobal

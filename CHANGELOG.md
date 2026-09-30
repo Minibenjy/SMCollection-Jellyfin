@@ -7,6 +7,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Discover Home 0.1.0 — new plugin
+
+- Reworks the web client's home screen into a discovery front page: the navigation
+  drawer pinned open on desktop, a centered search box with live suggestions from
+  `/Search/Hints`, denser poster cards, and a CSS-only media-type pill.
+- Genre and studio carousels shuffled in between Jellyfin's own rows, at a random
+  gap and never the same type twice running. Genre tiles are backed by a collage of
+  posters already in that genre; studio tiles use a real logo when one is cached.
+- Daily scheduled task downloads studio logos from a public artwork repository, for
+  the studios this library actually contains. Genres are deliberately not
+  downloaded — no public source exists, so those are composed in the browser.
+- Administrator configuration page covering layout, cards, rows and artwork,
+  including a switch that removes the client script again without uninstalling.
+- Presentation only: it reorders and restyles what the server already rendered for
+  a user, and changes nothing about what they are permitted to see.
+
 ## [1.0.0] — First public release
 
 First packaging of five plugins that had been running privately on a single
