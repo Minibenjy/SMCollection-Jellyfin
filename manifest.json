@@ -12,9 +12,9 @@
         "version": "0.1.0.0",
         "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
         "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.0.0/Jellyfin.Plugin.AiAssistant_0.1.0.0.zip",
-        "checksum": "93485c5d7132ec7b3233f00f4e88329b",
-        "timestamp": "2026-09-02T16:02:57Z"
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.1.0/Jellyfin.Plugin.AiAssistant_0.1.0.0.zip",
+        "checksum": "7f3f12753dcf3a12e38ed0c5e603046b",
+        "timestamp": "2026-09-30T16:52:43Z"
       }
     ]
   },
@@ -31,9 +31,28 @@
         "version": "1.0.0.0",
         "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
         "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.0.0/Jellyfin.Plugin.AutoThumbnails_1.0.0.0.zip",
-        "checksum": "0cdd1e9e2f5272d7d2e3086ef33ad4ec",
-        "timestamp": "2026-09-02T16:02:57Z"
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.1.0/Jellyfin.Plugin.AutoThumbnails_1.0.0.0.zip",
+        "checksum": "6335caba31bfd1a686020d8d0540551d",
+        "timestamp": "2026-09-30T16:52:43Z"
+      }
+    ]
+  },
+  {
+    "guid": "c3f7a1d8-5b42-4e69-9a0c-7d1e8f3b2a56",
+    "name": "Discover Home",
+    "description": "Restyles the Jellyfin home screen into something closer to a discovery front page: a sidebar pinned open on desktop, a centered search box with live suggestions, denser poster cards, and genre and studio carousels shuffled in between Jellyfin's own rows on every load. Studio logos are fetched once a day from a public artwork repository, and genre tiles are backed by a collage of posters already in that genre. Everything is presentation only \u2014 it reorders and restyles what Jellyfin already rendered for a user and never changes what they can see.",
+    "overview": "A discovery-style home screen for the Jellyfin web client.",
+    "owner": "Minibenjy",
+    "category": "General",
+    "imageUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/raw/main/docs/icons/Jellyfin.Plugin.DiscoverHome.png",
+    "versions": [
+      {
+        "version": "0.1.0.0",
+        "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.1.0/Jellyfin.Plugin.DiscoverHome_0.1.0.0.zip",
+        "checksum": "889f349287c84fa9d5bf97ae90dc330f",
+        "timestamp": "2026-09-30T16:52:43Z"
       }
     ]
   },
@@ -50,9 +69,9 @@
         "version": "1.0.0.0",
         "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
         "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.0.0/Jellyfin.Plugin.EnhancedPdfReader_1.0.0.0.zip",
-        "checksum": "52ce972ab6123678f8df1df1033c58cf",
-        "timestamp": "2026-09-02T16:02:57Z"
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.1.0/Jellyfin.Plugin.EnhancedPdfReader_1.0.0.0.zip",
+        "checksum": "cbe6ae17496f6778f9e0bdf33cefb276",
+        "timestamp": "2026-09-30T16:52:43Z"
       }
     ]
   },
@@ -69,9 +88,9 @@
         "version": "0.1.0.0",
         "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
         "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.0.0/Jellyfin.Plugin.KidsMode_0.1.0.0.zip",
-        "checksum": "00a8ba1b3c7064c444ccc9a72ebd4d6c",
-        "timestamp": "2026-09-02T16:02:57Z"
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.1.0/Jellyfin.Plugin.KidsMode_0.1.0.0.zip",
+        "checksum": "e129dcdf552837e728928cde32d8821f",
+        "timestamp": "2026-09-30T16:52:43Z"
       }
     ]
   },
@@ -88,9 +107,9 @@
         "version": "0.1.0.0",
         "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
         "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.0.0/Jellyfin.Plugin.MatureContent_0.1.0.0.zip",
-        "checksum": "6a237dcc5fde7fbbe3254eece9138612",
-        "timestamp": "2026-09-02T16:02:57Z"
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.1.0/Jellyfin.Plugin.MatureContent_0.1.0.0.zip",
+        "checksum": "2c94b0f94dc3597f6de35ae68daea93c",
+        "timestamp": "2026-09-30T16:52:43Z"
       }
     ]
   }
