@@ -161,13 +161,21 @@ body.dh-hide-random #randomItemButton {
   display: none !important;
 }
 
-/* The header's own Home/Favourites entries duplicate the sidebar once it is
-   pinned, and the text tabs (a separate native element from the icon buttons)
-   overlap the centered search box. */
-body.dh-centered-search .headerTop .headerHomeButton,
-body.dh-centered-search .headerTop .headerFavoritesButton,
-body.dh-centered-search .headerTop .headerWatchlistButton,
-body.dh-centered-search .skinHeader > .headerTabs.sectionTabs {
+/* The centered search is a desktop feature, gated on `dh-wide` (the sidebar
+   breakpoint). On a phone there is no room for it next to the header icons,
+   so below the breakpoint the header stays exactly as Jellyfin draws it: its
+   own search icon, Home/Favourites buttons and text tabs. */
+body.dh-centered-search:not(.dh-wide) .dh-topbar-search {
+  display: none !important;
+}
+
+/* Above it, the header's own Home/Favourites entries duplicate the pinned
+   sidebar, and the text tabs (a separate native element from the icon
+   buttons) overlap the centered search box. */
+body.dh-centered-search.dh-wide .headerTop .headerHomeButton,
+body.dh-centered-search.dh-wide .headerTop .headerFavoritesButton,
+body.dh-centered-search.dh-wide .headerTop .headerWatchlistButton,
+body.dh-centered-search.dh-wide .skinHeader > .headerTabs.sectionTabs {
   display: none !important;
 }
 

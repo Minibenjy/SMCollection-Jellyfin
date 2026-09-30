@@ -7,6 +7,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Discover Home 0.2.1 — no centered search on mobile
+
+- The centered search box only shows above the sidebar breakpoint (desktop).
+  Below it the header is left exactly as Jellyfin draws it — its own search
+  icon, Home/Favourites buttons and tabs — instead of squeezing the box in next
+  to the header icons.
+
 ### Discover Home 0.2.0 — personalisation and sidebar
 
 - "Customize home" entry in the sidebar (Usuario group) opens a panel where each
