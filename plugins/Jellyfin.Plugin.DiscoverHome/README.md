@@ -117,10 +117,16 @@ returns at most 16 rows regardless of `Limit` — some other plugin's middleware
 never tracked down. Search suggestions use `/Search/Hints` instead, which is
 Jellyfin's own indexed search endpoint and has no such ceiling.
 
+**Per-user settings live in DisplayPreferences.** The "Customize home" panel
+writes `dh.*` keys into `/DisplayPreferences/discoverhome?client=discoverhome`
+for the signed-in user. The plugin keeps no user data of its own; the client
+overlays those keys on the administrator's `/DiscoverHome/Settings`.
+
 ## Settings reference
 
 Layout: enable/disable, pin sidebar, breakpoint, reorder sidebar, logo in
-sidebar, centered search, hide random button.
+sidebar, collapsible sidebar groups, per-user customization, centered search,
+hide random button.
 Cards: compact cards, card width, large cards on desktop, type pills, accent colour, pill text per type.
 Rows: shuffle, genre row, studio row, min/max gap, tiles per carousel.
 Artwork: studio logos on/off, repository URL, genre collages on/off, plus the

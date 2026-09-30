@@ -7,6 +7,29 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Discover Home 0.2.0 — personalisation and sidebar
+
+- "Customize home" entry in the sidebar (Usuario group) opens a panel where each
+  user overrides the presentation defaults for their own account: large cards,
+  type pills, genre and studio carousels, row shuffling, pinned sidebar and
+  accent colour. Stored in Jellyfin's per-user DisplayPreferences, so it follows
+  the account across devices; the administrator's configuration stays the
+  default and "Reset" returns to it. Can be switched off by the administrator.
+- Sidebar groups (Media, Jellyfin Enhanced, Administration, User) fold and unfold
+  from their header, with a chevron. Each browser remembers which were folded.
+  Administrator option, on by default.
+- Genre and studio carousels get the same prev/next chevrons as Jellyfin's own
+  rows, plus click-and-drag scrolling with the mouse. A drag never opens the
+  tile it started on.
+
+### Kids Mode 0.1.1, Mature Content 0.1.1, AI Assistant 0.1.1 — refreshed icons
+
+- Kids "K" and Mature "M": cleaner geometric monograms in the same rounded tile.
+  When the mode is on the tile now fills with its colour (green / red) instead of
+  relying on a glow alone, and the buttons get a keyboard focus ring.
+- AI Assistant launcher: same round accent button with a subtle sheen and a
+  speech bubble with a spark, replacing the generic "forum" icon.
+
 ### Discover Home 0.1.3 — large cards on desktop
 
 - New "Large cards on desktop" option, on by default. Above the sidebar

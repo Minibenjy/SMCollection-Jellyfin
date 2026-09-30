@@ -55,6 +55,22 @@
 
         <div class="checkboxContainer checkboxContainer-withDescription">
           <label class="emby-checkbox-label">
+            <input is="emby-checkbox" type="checkbox" id="collapsibleSidebarGroups" />
+            <span>Collapsible sidebar groups</span>
+          </label>
+          <div class="fieldDescription checkboxFieldDescription">Click a group header (Media, Administration...) to fold it. Each browser remembers which groups were folded.</div>
+        </div>
+
+        <div class="checkboxContainer checkboxContainer-withDescription">
+          <label class="emby-checkbox-label">
+            <input is="emby-checkbox" type="checkbox" id="allowUserCustomization" />
+            <span>Let users customize their home</span>
+          </label>
+          <div class="fieldDescription checkboxFieldDescription">Adds a "Customize home" entry to the sidebar. Users can override card size, rows, pills, accent colour and the pinned sidebar for their own account; everything on this page stays the default.</div>
+        </div>
+
+        <div class="checkboxContainer checkboxContainer-withDescription">
+          <label class="emby-checkbox-label">
             <input is="emby-checkbox" type="checkbox" id="centeredSearch" />
             <span>Centered search box in the header</span>
           </label>
@@ -230,6 +246,7 @@
 
       var BOOLEANS = [
         'injectClientScript', 'pinSidebar', 'reorderSidebar', 'logoInSidebar',
+        'collapsibleSidebarGroups', 'allowUserCustomization',
         'centeredSearch', 'hideRandomButton', 'compactCards', 'largeDesktopCards', 'showTypeBadges',
         'shuffleSections', 'enableGenreRow', 'enableStudioRow',
         'enableStudioLogos', 'enableGenreCollages'

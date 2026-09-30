@@ -124,9 +124,16 @@
             '#' + LAUNCHER_ID + '{position:fixed;right:1.25rem;bottom:1.25rem;z-index:1000;',
             'width:3.25rem;height:3.25rem;border-radius:50%;border:none;cursor:pointer;',
             'display:flex;align-items:center;justify-content:center;',
-            'background:var(--accent,#00a4dc);color:#fff;',
-            'box-shadow:0 4px 14px rgba(0,0,0,.35);transition:transform .15s ease,opacity .15s ease}',
-            '#' + LAUNCHER_ID + ':hover{transform:scale(1.06)}',
+            /* Same round accent button as before, with a soft diagonal sheen and a
+               hairline inner edge so it reads as a surface rather than a flat disc. */
+            'background:linear-gradient(135deg,var(--accent,#00a4dc),',
+            'color-mix(in srgb,var(--accent,#00a4dc) 62%,#7c5cff));color:#fff;',
+            'box-shadow:0 6px 18px rgba(0,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.18);',
+            'transition:transform .18s ease,box-shadow .18s ease,opacity .15s ease}',
+            '#' + LAUNCHER_ID + ':hover{transform:translateY(-2px);',
+            'box-shadow:0 10px 24px rgba(0,0,0,.4),inset 0 0 0 1px rgba(255,255,255,.24)}',
+            '#' + LAUNCHER_ID + ':focus-visible{outline:2px solid #fff;outline-offset:3px}',
+            '#' + LAUNCHER_ID + ' svg{width:1.65rem;height:1.65rem;display:block}',
             '#' + LAUNCHER_ID + '[hidden]{display:none}',
 
             '#' + PANEL_ID + '{position:fixed;right:1.25rem;bottom:5.25rem;z-index:1001;',
@@ -204,7 +211,14 @@
         button.type = 'button';
         button.title = 'Assistant';
         button.setAttribute('aria-label', 'Assistant');
-        button.innerHTML = '<span class="material-icons" aria-hidden="true">forum</span>';
+        // A speech bubble with a spark cut into it: still reads as "chat", and
+        // says "assistant" without needing a label.
+        button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none">'
+            + '<path d="M12 4.3c-4.7 0-8.3 3-8.3 6.9 0 2.1 1.1 4 2.9 5.3l-.7 3.2 3.6-1.9'
+            + 'c.8.2 1.6.3 2.5.3 4.7 0 8.3-3 8.3-6.9S16.7 4.3 12 4.3Z" fill="currentColor"/>'
+            + '<path d="M12 7.7l.95 2.3 2.3.95-2.3.95L12 14.2l-.95-2.3-2.3-.95 2.3-.95Z"'
+            + ' fill="var(--accent,#00a4dc)"/>'
+            + '</svg>';
         button.addEventListener('click', togglePanel);
         document.body.appendChild(button);
         return button;

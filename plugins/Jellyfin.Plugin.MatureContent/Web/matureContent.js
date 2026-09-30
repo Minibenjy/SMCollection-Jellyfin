@@ -27,15 +27,17 @@
 
     // ---------------------------------------------------------------- glyphs
 
-    // Elegant geometric "M", even stroke weight, rounded joins.
-    var M_PATH = 'M6 17V7.6c0-.7.83-1.05 1.32-.55L12 11.8l4.68-4.75c.49-.5 1.32-.15 1.32.55V17';
+    // Geometric "M" sized to the tile's inner square: straight diagonals meeting
+    // at a rounded vertex, even stroke weight.
+    var M_PATH = 'M7.4 16.4V7.9l4.6 5.3 4.6-5.3v8.5';
     // Compact "M" that leaves room for a corner badge.
     var M_PATH_SM = 'M3 16.4V8.2c0-.63.75-.95 1.19-.5L8 11.5l3.81-3.8c.44-.45 1.19-.13 1.19.5v8.2';
 
     function topGlyph() {
         return '<svg class="mc-glyph" viewBox="0 0 24 24" aria-hidden="true" fill="none">'
-            + '<rect x="2.6" y="2.6" width="18.8" height="18.8" rx="5.6" stroke="currentColor" stroke-width="1.4" class="mc-ring"/>'
-            + '<path d="' + M_PATH + '" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"/>'
+            + '<rect x="3" y="3" width="18" height="18" rx="6" fill="currentColor" class="mc-tile"/>'
+            + '<rect x="3" y="3" width="18" height="18" rx="6" stroke="currentColor" stroke-width="1.5" class="mc-ring"/>'
+            + '<path d="' + M_PATH + '" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>'
             + '</svg>';
     }
 
@@ -106,19 +108,25 @@
         style.textContent = [
             '.mc-glyph{width:1.6rem;height:1.6rem;display:block;color:inherit;overflow:visible;',
                 'transition:color .18s ease,filter .18s ease,opacity .18s ease}',
-            '.mc-glyph .mc-ring{opacity:.28;transition:opacity .18s ease,stroke .18s ease}',
+            '.mc-glyph .mc-ring{opacity:.3;transition:opacity .18s ease,stroke .18s ease}',
+            /* The tile fills in when mature content is visible: state reads from
+               the shape, not only from a glow. */
+            '.mc-glyph .mc-tile{opacity:0;transition:opacity .18s ease}',
 
             /* topbar switch — matches the size/rhythm of the native header buttons */
             '#mc-toggle-root{display:inline-flex;align-items:center;height:100%}',
             '#mc-toggle-root.mc-floating{position:fixed;top:7px;right:96px;height:auto;z-index:1300}',
             '.mc-topbtn{width:2.4em;height:2.4em;display:inline-flex;align-items:center;justify-content:center;',
                 'border:0;background:transparent;cursor:pointer;color:inherit;padding:0;border-radius:50%}',
-            '.mc-topbtn:hover{background:rgba(255,255,255,.08)}',
+            '.mc-topbtn:hover{background:transparent}',
+            '.mc-topbtn:hover .mc-tile{opacity:.1}',
+            '.mc-topbtn:focus-visible{outline:2px solid #ff3131;outline-offset:1px}',
             '.mc-topbtn .mc-glyph{width:1.6rem;height:1.6rem}',
             '.mc-topbtn[aria-checked="false"] .mc-glyph{opacity:.62}',
             '.mc-topbtn[aria-checked="true"] .mc-glyph{color:#ff3131;opacity:1;',
-                'filter:drop-shadow(0 0 4px rgba(255,49,49,.55)) drop-shadow(0 0 11px rgba(255,49,49,.4))}',
-            '.mc-topbtn[aria-checked="true"] .mc-ring{opacity:.5}',
+                'filter:drop-shadow(0 0 6px rgba(255,49,49,.4))}',
+            '.mc-topbtn[aria-checked="true"] .mc-ring{opacity:.7}',
+            '.mc-topbtn[aria-checked="true"] .mc-tile{opacity:.18}',
             '.mc-topbtn:disabled{opacity:.5;cursor:default}',
             '@media (max-width:640px){#mc-toggle-root.mc-floating{right:60px;top:6px}}',
 
@@ -126,8 +134,9 @@
             '#mc-detail-btn .detailButton-icon{display:inline-flex;align-items:center;justify-content:center}',
             '#mc-detail-btn .mc-glyph{width:2.2rem;height:2.2rem}',
             '#mc-detail-btn.mc-on .mc-glyph{color:#ff3131;',
-                'filter:drop-shadow(0 0 4px rgba(255,49,49,.55)) drop-shadow(0 0 11px rgba(255,49,49,.38))}',
-            '#mc-detail-btn.mc-on .mc-ring{opacity:.5}',
+                'filter:drop-shadow(0 0 6px rgba(255,49,49,.4))}',
+            '#mc-detail-btn.mc-on .mc-ring{opacity:.7}',
+            '#mc-detail-btn.mc-on .mc-tile{opacity:.18}',
 
             /* multi-select toolbar buttons */
             '.selectionCommandsPanel .mc-sel-btn{color:#fff}',

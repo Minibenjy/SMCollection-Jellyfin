@@ -60,6 +60,8 @@ public class DiscoverHomeController : ControllerBase
             c.SidebarBreakpoint,
             c.ReorderSidebar,
             c.LogoInSidebar,
+            c.CollapsibleSidebarGroups,
+            c.AllowUserCustomization,
             c.CenteredSearch,
             c.HideRandomButton,
             c.CompactCards,

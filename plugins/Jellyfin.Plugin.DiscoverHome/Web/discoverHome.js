@@ -110,11 +110,21 @@
     }
   }
 
+  // The administrator's configuration is the default; a user may override the
+  // keys below for their own account from the "Customize home" panel. The
+  // effective settings are always rebuilt from both, never edited in place.
+  var adminSettings = null;
+
   function loadSettings() {
     var c = client();
     if (!c) return Promise.resolve(null);
-    return c.getJSON(c.getUrl("DiscoverHome/Settings"))
-      .then(function (s) { settings = s; applySettings(s); return s; })
+    return Promise.all([c.getJSON(c.getUrl("DiscoverHome/Settings")), loadUserPrefs()])
+      .then(function (res) {
+        adminSettings = res[0];
+        settings = effectiveSettings();
+        applySettings(settings);
+        return settings;
+      })
       .catch(function () { return null; });
   }
 
@@ -449,7 +459,105 @@
     });
 
     section.appendChild(row);
+    section.appendChild(buildScrollButtons(row));
+    enableDragScroll(row);
     return section;
+  }
+
+  // The carousel hides its scrollbar like the native rows do, which leaves a
+  // mouse with no way to reach the tiles past the right edge. Same markup and
+  // classes as Jellyfin's own `emby-scrollbuttons`, so the chevrons look and sit
+  // exactly like the ones on Continue Watching; the custom element itself isn't
+  // used because it only knows how to drive an `emby-scroller`.
+  function buildScrollButtons(row) {
+    var wrap = document.createElement("div");
+    wrap.className = "emby-scrollbuttons padded-right dh-scrollbuttons";
+
+    function button(direction, title) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "emby-scrollbuttons-button paper-icon-button-light";
+      b.title = title;
+      b.setAttribute("data-direction", direction);
+      var icon = document.createElement("span");
+      icon.className = "material-icons chevron_" + direction;
+      icon.setAttribute("aria-hidden", "true");
+      b.appendChild(icon);
+      b.addEventListener("click", function () {
+        var step = Math.max(row.clientWidth * 0.8, 200);
+        row.scrollBy({ left: direction === "left" ? -step : step, behavior: "smooth" });
+      });
+      wrap.appendChild(b);
+      return b;
+    }
+
+    var left = button("left", "Anterior");
+    var right = button("right", "Siguiente");
+
+    function sync() {
+      var max = row.scrollWidth - row.clientWidth;
+      left.disabled = row.scrollLeft <= 1;
+      right.disabled = row.scrollLeft >= max - 1;
+      wrap.hidden = max <= 1; // nothing to scroll: no chevrons, as on native rows
+    }
+
+    row.addEventListener("scroll", sync, { passive: true });
+    // Observed on the row itself rather than a window resize listener, which
+    // would pile up one more per visit to Home; this dies with the row. Also
+    // covers tiles that only take their final size once their images land.
+    if (window.ResizeObserver) new ResizeObserver(sync).observe(row);
+    requestAnimationFrame(sync);
+    return wrap;
+  }
+
+  // Click-and-drag scrolling for mouse users. A drag that actually moved must
+  // not also open the tile it started on, so the click that ends it is eaten.
+  function enableDragScroll(row) {
+    var startX = 0;
+    var startLeft = 0;
+    var dragging = false;
+    var moved = false;
+
+    row.addEventListener("dragstart", function (e) { e.preventDefault(); });
+
+    row.addEventListener("pointerdown", function (e) {
+      if (e.pointerType !== "mouse" || e.button !== 0) return;
+      dragging = true;
+      moved = false;
+      startX = e.clientX;
+      startLeft = row.scrollLeft;
+    });
+
+    // Pointer capture keeps the move/up events on the row even when the mouse
+    // leaves it mid-drag, without any listener on window.
+    row.addEventListener("pointermove", function (e) {
+      if (!dragging) return;
+      var dx = e.clientX - startX;
+      if (!moved && Math.abs(dx) < 5) return;
+      if (!moved) {
+        moved = true;
+        row.classList.add("dh-dragging");
+        row.setPointerCapture(e.pointerId);
+      }
+      row.scrollLeft = startLeft - dx;
+    });
+
+    function end() {
+      if (!dragging) return;
+      dragging = false;
+      row.classList.remove("dh-dragging");
+    }
+
+    row.addEventListener("pointerup", end);
+    row.addEventListener("pointercancel", end);
+
+    row.addEventListener("click", function (e) {
+      if (moved) {
+        e.preventDefault();
+        e.stopPropagation();
+        moved = false;
+      }
+    }, true);
   }
 
   // ---------------------------------------------------------------- ordering
@@ -567,6 +675,275 @@
     });
   }
 
+  // ---------------------------------------------------------------- user preferences
+
+  // Stored in Jellyfin's own per-user DisplayPreferences, so a user's choices
+  // follow their account to every browser and device without the plugin
+  // keeping any user data of its own. Values are strings there.
+  var PREFS_ID = "discoverhome";
+  var PREFS_CLIENT = "discoverhome";
+
+  var USER_OPTIONS = [
+    { key: "LargeDesktopCards", label: "Tarjetas grandes en escritorio", type: "bool" },
+    { key: "ShowTypeBadges", label: "Etiqueta de tipo en cada tarjeta", type: "bool" },
+    { key: "EnableGenreRow", label: "Carrusel de géneros", type: "bool", rows: true },
+    { key: "EnableStudioRow", label: "Carrusel de estudios", type: "bool", rows: true },
+    { key: "ShuffleSections", label: "Barajar las filas en cada visita", type: "bool", rows: true },
+    { key: "PinSidebar", label: "Barra lateral fija en escritorio", type: "bool" },
+    { key: "AccentColor", label: "Color de acento", type: "color" }
+  ];
+
+  var prefsDoc = null;
+  var userPrefs = {};
+
+  function loadUserPrefs() {
+    var c = client();
+    if (!c || typeof c.getDisplayPreferences !== "function") return Promise.resolve();
+    return c.getDisplayPreferences(PREFS_ID, c.getCurrentUserId(), PREFS_CLIENT)
+      .then(function (doc) {
+        prefsDoc = doc || {};
+        var custom = prefsDoc.CustomPrefs || {};
+        userPrefs = {};
+        USER_OPTIONS.forEach(function (o) {
+          var v = custom["dh." + o.key];
+          if (v === undefined || v === null || v === "") return;
+          userPrefs[o.key] = o.type === "bool" ? v === "true" : v;
+        });
+      })
+      .catch(function () { prefsDoc = null; userPrefs = {}; });
+  }
+
+  var saveTimer = null;
+
+  function saveUserPrefs() {
+    var c = client();
+    if (!c || !prefsDoc || typeof c.updateDisplayPreferences !== "function") return;
+    clearTimeout(saveTimer);
+    // Debounced: dragging the colour picker fires dozens of changes a second.
+    saveTimer = setTimeout(function () {
+      var custom = prefsDoc.CustomPrefs = prefsDoc.CustomPrefs || {};
+      USER_OPTIONS.forEach(function (o) {
+        var k = "dh." + o.key;
+        if (userPrefs.hasOwnProperty(o.key)) custom[k] = String(userPrefs[o.key]);
+        else delete custom[k];
+      });
+      c.updateDisplayPreferences(PREFS_ID, prefsDoc, c.getCurrentUserId(), PREFS_CLIENT)
+        .catch(function () { /* the change still applies for this session */ });
+    }, 400);
+  }
+
+  function effectiveSettings() {
+    var s = {};
+    for (var k in adminSettings) s[k] = adminSettings[k];
+    if (adminSettings && adminSettings.AllowUserCustomization) {
+      for (var u in userPrefs) s[u] = userPrefs[u];
+    }
+    return s;
+  }
+
+  // Row-level options (which carousels, shuffling) can't be restyled in place:
+  // the home screen is re-laid out from scratch with the new settings.
+  function relayoutHome() {
+    var container = document.querySelector(".page:not(.hide) .homeSectionsContainer");
+    if (!container) return;
+    Array.prototype.slice.call(container.querySelectorAll(":scope > .dh-channel-section"))
+      .forEach(function (s) { s.remove(); });
+    Array.prototype.slice.call(container.children).forEach(function (s) {
+      delete s.dataset.dhDone;
+      s.style.order = "";
+    });
+    homeState.delete(container);
+    processHome(container);
+  }
+
+  function setUserPref(option, value) {
+    userPrefs[option.key] = value;
+    settings = effectiveSettings();
+    applySettings(settings);
+    saveUserPrefs();
+    if (option.rows) relayoutHome();
+  }
+
+  // ---------------------------------------------------------------- customize panel
+
+  var PANEL_ID = "dh-prefs";
+
+  function closePanel() {
+    var p = document.getElementById(PANEL_ID);
+    if (p) p.remove();
+    document.removeEventListener("keydown", onPanelKey);
+  }
+
+  function onPanelKey(e) {
+    if (e.key === "Escape") closePanel();
+  }
+
+  function openPanel() {
+    closePanel();
+
+    var backdrop = document.createElement("div");
+    backdrop.id = PANEL_ID;
+    backdrop.className = "dh-prefs-backdrop";
+    backdrop.addEventListener("click", function (e) { if (e.target === backdrop) closePanel(); });
+
+    var dialog = document.createElement("div");
+    dialog.className = "dh-prefs";
+    dialog.setAttribute("role", "dialog");
+    dialog.setAttribute("aria-modal", "true");
+    dialog.setAttribute("aria-labelledby", "dh-prefs-title");
+
+    var head = document.createElement("div");
+    head.className = "dh-prefs-head";
+    var title = document.createElement("h2");
+    title.id = "dh-prefs-title";
+    title.textContent = "Personalizar inicio";
+    var close = document.createElement("button");
+    close.type = "button";
+    close.className = "dh-prefs-close paper-icon-button-light";
+    close.title = "Cerrar";
+    close.innerHTML = '<span class="material-icons close" aria-hidden="true"></span>';
+    close.addEventListener("click", closePanel);
+    head.appendChild(title);
+    head.appendChild(close);
+    dialog.appendChild(head);
+
+    var note = document.createElement("p");
+    note.className = "dh-prefs-note";
+    note.textContent = "Solo para tu cuenta. Se guarda en tu perfil de Jellyfin y te sigue en todos tus dispositivos.";
+    dialog.appendChild(note);
+
+    var list = document.createElement("div");
+    list.className = "dh-prefs-list";
+
+    USER_OPTIONS.forEach(function (o) {
+      var row = document.createElement("label");
+      row.className = "dh-prefs-row";
+      var text = document.createElement("span");
+      text.textContent = o.label;
+      row.appendChild(text);
+
+      var input = document.createElement("input");
+      if (o.type === "bool") {
+        input.type = "checkbox";
+        input.className = "dh-switch";
+        input.setAttribute("role", "switch");
+        input.checked = !!settings[o.key];
+        input.addEventListener("change", function () { setUserPref(o, input.checked); });
+      } else {
+        input.type = "color";
+        input.className = "dh-color";
+        input.value = /^#[0-9a-f]{6}$/i.test(settings[o.key] || "") ? settings[o.key] : "#7c5cff";
+        input.addEventListener("input", function () { setUserPref(o, input.value); });
+      }
+      row.appendChild(input);
+      list.appendChild(row);
+    });
+    dialog.appendChild(list);
+
+    var foot = document.createElement("div");
+    foot.className = "dh-prefs-foot";
+    var reset = document.createElement("button");
+    reset.type = "button";
+    reset.className = "dh-prefs-reset";
+    reset.textContent = "Restablecer a los valores del servidor";
+    reset.addEventListener("click", function () {
+      userPrefs = {};
+      settings = effectiveSettings();
+      applySettings(settings);
+      saveUserPrefs();
+      relayoutHome();
+      openPanel(); // re-render the controls with the defaults
+    });
+    foot.appendChild(reset);
+    dialog.appendChild(foot);
+
+    backdrop.appendChild(dialog);
+    document.body.appendChild(backdrop);
+    document.addEventListener("keydown", onPanelKey);
+    close.focus();
+  }
+
+  // Jellyfin rebuilds the drawer on navigation, so the entry is re-added
+  // whenever it has gone missing. It sits in the user's own group, next to
+  // Settings, since it is a per-user setting.
+  function setupCustomizeEntry() {
+    if (!settings || !settings.AllowUserCustomization) return;
+    var group = document.querySelector(".mainDrawer .userMenuOptions");
+    if (!group || group.querySelector(".dh-customize-link")) return;
+
+    var link = document.createElement("a");
+    link.href = "#";
+    link.className = "navMenuOption lnkMediaFolder emby-button dh-customize-link";
+    link.innerHTML = '<span class="material-icons navMenuOptionIcon dashboard_customize" aria-hidden="true"></span>'
+      + '<span class="navMenuOptionText">Personalizar inicio</span>';
+    link.addEventListener("click", function (e) {
+      e.preventDefault();
+      openPanel();
+    });
+
+    var header = group.querySelector(".sidebarHeader");
+    group.insertBefore(link, header ? header.nextSibling : group.firstChild);
+  }
+
+  // ---------------------------------------------------------------- collapsible sidebar
+
+  // Folded groups are remembered per browser. Keyed by the group's own class
+  // (libraryMenuOptions, adminMenuOptions...) rather than its header text, so a
+  // change of UI language doesn't forget them.
+  var FOLD_KEY = "dh-sidebar-folded";
+
+  function readFolded() {
+    try { return JSON.parse(localStorage.getItem(FOLD_KEY)) || {}; } catch (e) { return {}; }
+  }
+
+  function writeFolded(map) {
+    try { localStorage.setItem(FOLD_KEY, JSON.stringify(map)); } catch (e) { /* private mode */ }
+  }
+
+  function groupKey(group, header) {
+    var cls = (group.className || "").toString().split(/\s+/).filter(function (c) {
+      return c && c.indexOf("dh-") !== 0;
+    })[0];
+    return cls || "h:" + header.textContent.trim();
+  }
+
+  function setupSidebarGroups() {
+    if (!settings || !settings.CollapsibleSidebarGroups) return;
+    var container = document.querySelector(".mainDrawer .mainDrawer-scrollContainer");
+    if (!container) return;
+
+    var folded = readFolded();
+
+    Array.prototype.slice.call(container.children).forEach(function (group) {
+      var header = group.firstElementChild;
+      if (!header || header.tagName !== "H3") return;
+      var key = groupKey(group, header);
+
+      group.classList.add("dh-foldable");
+      group.classList.toggle("dh-folded", !!folded[key]);
+      header.setAttribute("aria-expanded", folded[key] ? "false" : "true");
+
+      if (header.dataset.dhFold) return;
+      header.dataset.dhFold = "1";
+      header.setAttribute("role", "button");
+      header.tabIndex = 0;
+
+      var toggle = function () {
+        var map = readFolded();
+        var nowFolded = !group.classList.contains("dh-folded");
+        if (nowFolded) map[key] = true; else delete map[key];
+        writeFolded(map);
+        group.classList.toggle("dh-folded", nowFolded);
+        header.setAttribute("aria-expanded", nowFolded ? "false" : "true");
+      };
+
+      header.addEventListener("click", toggle);
+      header.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+      });
+    });
+  }
+
   // ---------------------------------------------------------------- wiring
 
   var pending = false;
@@ -587,6 +964,8 @@
 
       setupSearchBar();
       setupSidebarLogo();
+      setupSidebarGroups();
+      setupCustomizeEntry();
 
       var container = document.querySelector(".homeSectionsContainer");
       if (container) processHome(container);

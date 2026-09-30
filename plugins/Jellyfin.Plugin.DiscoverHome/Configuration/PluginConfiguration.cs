@@ -30,6 +30,18 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Gets or sets a value indicating whether the logo is moved into the sidebar.</summary>
     public bool LogoInSidebar { get; set; } = true;
 
+    /// <summary>
+    /// Gets or sets a value indicating whether each sidebar group (Media, Administration...)
+    /// can be folded by clicking its header. The folded state is remembered per browser.
+    /// </summary>
+    public bool CollapsibleSidebarGroups { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether users get a "Customize home" entry in the
+    /// sidebar to override the presentation defaults for their own account.
+    /// </summary>
+    public bool AllowUserCustomization { get; set; } = true;
+
     /// <summary>Gets or sets a value indicating whether a centered search box replaces the header's nav tabs.</summary>
     public bool CenteredSearch { get; set; } = true;
 

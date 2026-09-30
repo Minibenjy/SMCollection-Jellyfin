@@ -25,14 +25,17 @@
 
     // ---------------------------------------------------------------- glyphs
 
-    var K_STEM = 'M8 6.6V17.4';
-    var K_ARMS = 'M8 12l6.7-5.4M8 12l6.7 5.4';
+    // Geometric "K": the leg springs from the arm rather than from the stem,
+    // which reads cleaner at 24px than the classic two-arms-from-a-point.
+    var K_STEM = 'M9.1 7.6v8.8';
+    var K_ARMS = 'M15.1 7.6l-6 4.7M11.5 10.5l3.8 5.9';
 
     function kGlyph() {
         return '<svg class="kd-glyph" viewBox="0 0 24 24" aria-hidden="true" fill="none">'
-            + '<rect x="2.6" y="2.6" width="18.8" height="18.8" rx="5.6" stroke="currentColor" stroke-width="1.4" class="kd-ring"/>'
-            + '<path d="' + K_STEM + '" stroke="currentColor" stroke-width="2.15" stroke-linecap="round"/>'
-            + '<path d="' + K_ARMS + '" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"/>'
+            + '<rect x="3" y="3" width="18" height="18" rx="6" fill="currentColor" class="kd-tile"/>'
+            + '<rect x="3" y="3" width="18" height="18" rx="6" stroke="currentColor" stroke-width="1.5" class="kd-ring"/>'
+            + '<path d="' + K_STEM + '" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>'
+            + '<path d="' + K_ARMS + '" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>'
             + '</svg>';
     }
 
@@ -41,8 +44,8 @@
             ? '<path d="M17.6 5.1v5M15.1 7.6h5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>'
             : '<path d="M15.1 7.6h5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>';
         return '<svg class="kd-glyph" viewBox="0 0 24 24" aria-hidden="true" fill="none">'
-            + '<path d="M4 6.6V17.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'
-            + '<path d="M4 12l5.4-4.4M4 12l5.4 4.4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+            + '<path d="M4 7.2v9.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'
+            + '<path d="M9.4 7.2L4 11.8M6 10.1l3.6 6.7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
             + '<circle cx="17.6" cy="7.6" r="4.6" stroke="currentColor" stroke-width="1.7"/>'
             + inner
             + '</svg>';
@@ -94,26 +97,33 @@
         style.textContent = [
             '.kd-glyph{width:1.6rem;height:1.6rem;display:block;color:inherit;overflow:visible;',
                 'transition:color .18s ease,filter .18s ease,opacity .18s ease}',
-            '.kd-glyph .kd-ring{opacity:.28;transition:opacity .18s ease}',
+            '.kd-glyph .kd-ring{opacity:.3;transition:opacity .18s ease}',
+            /* The tile fills in when kids mode is on: state reads from the shape,
+               not only from a glow, and stays legible on light artwork. */
+            '.kd-glyph .kd-tile{opacity:0;transition:opacity .18s ease}',
 
             '#kd-toggle-root{display:inline-flex;align-items:center;height:100%}',
             '#kd-toggle-root.kd-floating{position:fixed;top:7px;right:140px;height:auto;z-index:1300}',
             '.kd-topbtn{width:2.4em;height:2.4em;display:inline-flex;align-items:center;justify-content:center;',
                 'border:0;background:transparent;cursor:pointer;color:inherit;padding:0;border-radius:50%}',
-            '.kd-topbtn:hover{background:rgba(255,255,255,.08)}',
+            '.kd-topbtn:hover{background:transparent}',
+            '.kd-topbtn:hover .kd-tile{opacity:.1}',
+            '.kd-topbtn:focus-visible{outline:2px solid #37d67a;outline-offset:1px}',
             '.kd-topbtn .kd-glyph{width:1.6rem;height:1.6rem}',
             '.kd-topbtn[aria-checked="false"] .kd-glyph{opacity:.62}',
             '.kd-topbtn[aria-checked="true"] .kd-glyph{color:#37d67a;opacity:1;',
-                'filter:drop-shadow(0 0 4px rgba(55,214,122,.6)) drop-shadow(0 0 11px rgba(55,214,122,.42))}',
-            '.kd-topbtn[aria-checked="true"] .kd-ring{opacity:.5}',
+                'filter:drop-shadow(0 0 6px rgba(55,214,122,.45))}',
+            '.kd-topbtn[aria-checked="true"] .kd-ring{opacity:.7}',
+            '.kd-topbtn[aria-checked="true"] .kd-tile{opacity:.18}',
             '.kd-topbtn:disabled{opacity:.5;cursor:default}',
             '@media (max-width:640px){#kd-toggle-root.kd-floating{right:96px;top:6px}}',
 
             '#kd-detail-btn .detailButton-icon{display:inline-flex;align-items:center;justify-content:center}',
             '#kd-detail-btn .kd-glyph{width:2.2rem;height:2.2rem}',
             '#kd-detail-btn.kd-on .kd-glyph{color:#37d67a;',
-                'filter:drop-shadow(0 0 4px rgba(55,214,122,.6)) drop-shadow(0 0 11px rgba(55,214,122,.4))}',
-            '#kd-detail-btn.kd-on .kd-ring{opacity:.5}',
+                'filter:drop-shadow(0 0 6px rgba(55,214,122,.45))}',
+            '#kd-detail-btn.kd-on .kd-ring{opacity:.7}',
+            '#kd-detail-btn.kd-on .kd-tile{opacity:.18}',
 
             '.selectionCommandsPanel .kd-sel-btn{color:#fff}',
             '.selectionCommandsPanel .kd-sel-btn .kd-glyph{width:1.6rem;height:1.6rem}',
