@@ -7,6 +7,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Discover Home 0.1.2 — fixes
+
+- Hides the permanent "Loading..." KefinTweaks leaves at the bottom of Home when
+  its discovery engine is switched off. Its stylesheet forces that text visible
+  until the page is marked discovery-ready, which never happens with discovery
+  disabled. KefinTweaks' own behaviour is untouched once discovery is enabled.
+
 ### Discover Home 0.1.1 — fixes
 
 - Studio logos now actually appear. 0.1.0 only attached the logo once it had

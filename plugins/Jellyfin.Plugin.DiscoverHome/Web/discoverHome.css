@@ -432,3 +432,15 @@ body.dh-badges .homeSectionsContainer .card[data-type="Episode"]::before {
   height: 100%;
   object-fit: cover;
 }
+
+/* ================================================== compatibility */
+
+/* KefinTweaks always adds its discovery "Loading..." indicator to the bottom of
+   Home, and its stylesheet forces that text visible until the discovery engine
+   marks the page ready. With the discovery engine switched off the page never
+   becomes ready, so a permanent "Loading..." sits under the last row with
+   nothing ever coming. Hidden only in that state: once discovery is ready, or
+   while it is genuinely loading (`.show`), KefinTweaks' own rules apply. */
+#indexPage:not([data-discovery-ready]) div#discovery-loading-indicator:not(.show) {
+  display: none;
+}
