@@ -7,6 +7,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-10-02
+
+- File Transformation fallback (1.3.0) never ran: it registered under a different pattern string than other plugins and File Transformation only runs one pipeline per pattern. Now registers under the shared "index.html" pattern. AI Assistant 0.1.4, Discover Home 0.2.6, Kids Mode 0.1.4, Mature Content 0.1.4, Enhanced PDF Reader 1.0.3.
+
 ## [1.3.0] - 2026-10-02
 
 ### AI Assistant 0.1.3, Discover Home 0.2.5, Kids Mode 0.1.3, Mature Content 0.1.3, Enhanced PDF Reader 1.0.2: work on read-only jellyfin-web

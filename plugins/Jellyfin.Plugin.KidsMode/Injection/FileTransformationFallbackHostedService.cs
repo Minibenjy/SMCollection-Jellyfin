@@ -143,10 +143,12 @@ public class FileTransformationFallbackHostedService : IHostedService
             return false;
         }
 
+        // The pattern must be the literal "index.html": File Transformation keeps one pipeline per pattern
+        // string and runs only the first matching one, so any other spelling is silently never run.
         // The payload is a Newtonsoft JObject living in File Transformation's own context, so build it
         // through the parameter type instead of referencing Newtonsoft here.
         var payloadType = method.GetParameters()[0].ParameterType;
-        var json = "{\"id\":\"26647c37-f7c5-50f0-b97a-d00b39ed8fa8\",\"fileNamePattern\":\"index\\\\.html\",\"callbackAssembly\":\""
+        var json = "{\"id\":\"26647c37-f7c5-50f0-b97a-d00b39ed8fa8\",\"fileNamePattern\":\"index.html\",\"callbackAssembly\":\""
             + typeof(FileTransformationFallbackHostedService).Assembly.FullName + "\",\"callbackClass\":\""
             + typeof(FileTransformationFallbackHostedService).FullName + "\",\"callbackMethod\":\"Patch\"}";
         var parse = payloadType.GetMethod("Parse", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(string) }, null);

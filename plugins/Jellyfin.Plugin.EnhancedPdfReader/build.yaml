@@ -1,7 +1,7 @@
 ---
 name: "Enhanced PDF Reader"
 guid: "b1f4a1c0-2e6d-4c9a-9f2a-7d3e5c8b1a90"
-version: "1.0.2.0"
+version: "1.0.3.0"
 targetAbi: "10.11.0.0"
 framework: "net9.0"
 owner: "Minibenjy"
