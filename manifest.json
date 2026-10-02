@@ -9,6 +9,14 @@
     "imageUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/raw/main/docs/icons/Jellyfin.Plugin.AiAssistant.png",
     "versions": [
       {
+        "version": "0.1.2.0",
+        "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.2.2/Jellyfin.Plugin.AiAssistant_0.1.2.0.zip",
+        "checksum": "f0c2a30d63ab49539e2c234e07bba131",
+        "timestamp": "2026-10-02T20:18:46Z"
+      },
+      {
         "version": "0.1.1.0",
         "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
         "targetAbi": "10.11.0.0",
@@ -36,6 +44,14 @@
     "imageUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/raw/main/docs/icons/Jellyfin.Plugin.AutoThumbnails.png",
     "versions": [
       {
+        "version": "1.0.1.0",
+        "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.2.2/Jellyfin.Plugin.AutoThumbnails_1.0.1.0.zip",
+        "checksum": "0e70ba78421851190738854159030da2",
+        "timestamp": "2026-10-02T20:18:46Z"
+      },
+      {
         "version": "1.0.0.0",
         "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
         "targetAbi": "10.11.0.0",
@@ -54,6 +70,14 @@
     "category": "General",
     "imageUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/raw/main/docs/icons/Jellyfin.Plugin.DiscoverHome.png",
     "versions": [
+      {
+        "version": "0.2.2.0",
+        "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.2.2/Jellyfin.Plugin.DiscoverHome_0.2.2.0.zip",
+        "checksum": "c1a100ccb4a2d3159d026fc85aa651c0",
+        "timestamp": "2026-10-02T20:18:46Z"
+      },
       {
         "version": "0.2.1.0",
         "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
@@ -114,6 +138,14 @@
     "imageUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/raw/main/docs/icons/Jellyfin.Plugin.EnhancedPdfReader.png",
     "versions": [
       {
+        "version": "1.0.1.0",
+        "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.2.2/Jellyfin.Plugin.EnhancedPdfReader_1.0.1.0.zip",
+        "checksum": "682ed36eb7369ec942873f2bb6ae90e4",
+        "timestamp": "2026-10-02T20:18:46Z"
+      },
+      {
         "version": "1.0.0.0",
         "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
         "targetAbi": "10.11.0.0",
@@ -132,6 +164,14 @@
     "category": "General",
     "imageUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/raw/main/docs/icons/Jellyfin.Plugin.KidsMode.png",
     "versions": [
+      {
+        "version": "0.1.2.0",
+        "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.2.2/Jellyfin.Plugin.KidsMode_0.1.2.0.zip",
+        "checksum": "2203ad948a15123ed5d78ca000c251a9",
+        "timestamp": "2026-10-02T20:18:46Z"
+      },
       {
         "version": "0.1.1.0",
         "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
@@ -159,6 +199,14 @@
     "category": "General",
     "imageUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/raw/main/docs/icons/Jellyfin.Plugin.MatureContent.png",
     "versions": [
+      {
+        "version": "0.1.2.0",
+        "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.2.2/Jellyfin.Plugin.MatureContent_0.1.2.0.zip",
+        "checksum": "e6fc8647ea063c9beb5bc82fc7d5565c",
+        "timestamp": "2026-10-02T20:18:46Z"
+      },
       {
         "version": "0.1.1.0",
         "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
