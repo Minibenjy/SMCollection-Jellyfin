@@ -7,6 +7,26 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-10-02
+
+Versions: Discover Home 0.2.2, AI Assistant 0.1.2, Kids Mode 0.1.2, Mature Content 0.1.2, Auto Thumbnails 1.0.1, Enhanced PDF Reader 1.0.1.
+
+### Discover Home: genre/studio carousel swipe on mobile
+
+- Swiping the genre or studio carousel on a touch screen no longer chains to the
+  page (overscroll-behavior-x: contain, touch-action: pan-x pan-y), which reloaded Home.
+
+### All plugins: no site-specific defaults, English UI
+
+- Discover Home: badge, search, genre/studio and "Customize home" strings now follow
+  the interface language (English default, Spanish included) instead of being fixed
+  Spanish. The badge label defaults are empty (= localised built-in text); any value
+  already saved in a server's configuration keeps working untouched.
+- AI Assistant: the endpoint placeholder is the generic http://localhost:11434
+  instead of a LAN address.
+- Admin pages of Mature Content, Kids Mode, Auto Thumbnails and Enhanced PDF Reader:
+  leftover Spanish labels translated to English to match the rest of the UI.
+
 ### Discover Home 0.2.1 — no centered search on mobile
 
 - The centered search box only shows above the sidebar breakpoint (desktop).

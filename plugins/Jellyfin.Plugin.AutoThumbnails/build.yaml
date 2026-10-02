@@ -1,7 +1,7 @@
 ---
 name: "Auto Thumbnails"
 guid: "7c2b9e14-5a83-4d6f-9b21-3e8f4a0c6d75"
-version: "1.0.0.0"
+version: "1.0.1.0"
 targetAbi: "10.11.0.0"
 framework: "net9.0"
 owner: "Minibenjy"

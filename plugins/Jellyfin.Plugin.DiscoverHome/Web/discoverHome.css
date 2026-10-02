@@ -324,6 +324,12 @@ body.dh-badges .homeSectionsContainer .card[data-type="Episode"]::before {
   padding-right: var(--dh-gap);
   overflow-x: auto;
   scrollbar-width: none;
+  /* A horizontal swipe on touch screens must stay inside the strip: without
+     this the browser can chain it to the page (overscroll navigation or
+     pull-to-refresh), which reloaded Home on mobile. */
+  overscroll-behavior-x: contain;
+  touch-action: pan-x pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* No scroll-snap: with `scroll-snap-align` on the tiles the browser snapped

@@ -86,9 +86,9 @@
                     <table class="mc-users">
                         <thead>
                             <tr>
-                                <th>Usuario</th>
-                                <th>Ver +18 ahora</th>
-                                <th>Puede alternarlo</th>
+                                <th>User</th>
+                                <th>Show +18 now</th>
+                                <th>Can toggle it</th>
                                 <th>Estado</th>
                             </tr>
                         </thead>
@@ -98,7 +98,7 @@
 
                 <div class="mc-band">
                     <h3 class="sectionTitle">
-                        Contenido marcado como +18
+                        Content marked as +18
                         <span class="mc-count" id="MatureMarkedCount"></span>
                     </h3>
                     <div class="mc-actions" style="margin-top:.4rem">
@@ -137,7 +137,7 @@
                 <div class="mc-actions">
                     <button is="emby-button" type="submit" class="raised button-submit">
                         <span class="material-icons" aria-hidden="true">save</span>
-                        <span>Guardar ajustes</span>
+                        <span>Save settings</span>
                     </button>
                 </div>
             </form>
@@ -193,9 +193,9 @@
                         : (u.IsAdministrator ? !!currentConfig.ShowToggleForAdministrators : !!currentConfig.ShowToggleForUsers);
                     return [
                         '<tr data-user-id="' + u.Id + '">',
-                            '<td data-label="Usuario"><div class="mc-user-name"><span class="material-icons" aria-hidden="true">person</span><span>' + escapeHtml(u.Username) + '</span>' + (u.IsAdministrator ? '<span class="mc-pill">admin</span>' : '') + '</div></td>',
-                            '<td data-label="Ver +18 ahora"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" class="mc-user-visible" ' + (u.MatureVisible ? 'checked' : '') + ' /><span>Visible</span></label></td>',
-                            '<td data-label="Puede alternarlo"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" class="mc-user-toggle" ' + (canToggle ? 'checked' : '') + ' /><span>Switch +18</span></label></td>',
+                            '<td data-label="User"><div class="mc-user-name"><span class="material-icons" aria-hidden="true">person</span><span>' + escapeHtml(u.Username) + '</span>' + (u.IsAdministrator ? '<span class="mc-pill">admin</span>' : '') + '</div></td>',
+                            '<td data-label="Show +18 now"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" class="mc-user-visible" ' + (u.MatureVisible ? 'checked' : '') + ' /><span>Visible</span></label></td>',
+                            '<td data-label="Can toggle it"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" class="mc-user-toggle" ' + (canToggle ? 'checked' : '') + ' /><span>Switch +18</span></label></td>',
                             '<td data-label="Status"><span class="mc-pill ' + (u.MatureVisible ? 'on' : '') + '">' + (u.MatureVisible ? '+18 visible' : 'hidden') + '</span></td>',
                         '</tr>'
                     ].join('');

@@ -3,8 +3,8 @@
   <PropertyGroup>
     <RootNamespace>Jellyfin.Plugin.DiscoverHome</RootNamespace>
     <AssemblyName>Jellyfin.Plugin.DiscoverHome</AssemblyName>
-    <Version>0.2.1.0</Version>
-    <FileVersion>0.2.1.0</FileVersion>
+    <Version>0.2.2.0</Version>
+    <FileVersion>0.2.2.0</FileVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 

@@ -79,7 +79,7 @@
                             <tr>
                                 <th>Cuenta</th>
                                 <th>Disponible</th>
-                                <th>Activo ahora</th>
+                                <th>Active now</th>
                                 <th>En kids</th>
                                 <th>Override</th>
                                 <th></th>
@@ -137,7 +137,7 @@
                 <div class="kd-actions">
                     <button is="emby-button" type="submit" class="raised button-submit">
                         <span class="material-icons" aria-hidden="true">save</span>
-                        <span>Guardar ajustes</span>
+                        <span>Save settings</span>
                     </button>
                 </div>
             </form>
@@ -180,7 +180,7 @@
                             '<td data-label="Active now"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" class="kd-u-active" ' + (u.Active ? 'checked' : '') + (u.Enabled ? '' : ' disabled') + ' /><span>Active</span></label></td>',
                             '<td data-label="En kids"><span class="kd-pill ' + (u.Active ? 'on' : '') + '">' + u.EffectiveCount + '</span></td>',
                             '<td data-label="Override">' + (u.Added || u.Removed ? '<span class="kd-src added">+' + u.Added + '</span> <span class="kd-src removed">−' + u.Removed + '</span>' : '<span class="kd-count">—</span>') + '</td>',
-                            '<td><button type="button" class="kd-linkbtn kd-u-edit">Ver / editar lista</button></td>',
+                            '<td><button type="button" class="kd-linkbtn kd-u-edit">View / edit list</button></td>',
                         '</tr>'
                     ].join('');
                 }).join('');

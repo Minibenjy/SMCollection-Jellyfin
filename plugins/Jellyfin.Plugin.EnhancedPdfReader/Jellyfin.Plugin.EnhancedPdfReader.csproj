@@ -3,8 +3,8 @@
   <PropertyGroup>
     <RootNamespace>Jellyfin.Plugin.EnhancedPdfReader</RootNamespace>
     <AssemblyName>Jellyfin.Plugin.EnhancedPdfReader</AssemblyName>
-    <Version>1.0.0.0</Version>
-    <FileVersion>1.0.0.0</FileVersion>
+    <Version>1.0.1.0</Version>
+    <FileVersion>1.0.1.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

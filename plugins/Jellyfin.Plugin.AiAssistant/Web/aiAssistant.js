@@ -248,7 +248,7 @@
             '<div class="aiaField"><label for="aiaProvider">Provider</label>' +
             '<select id="aiaProvider"></select></div>' +
             '<div class="aiaField"><label for="aiaBaseUrl">Endpoint</label>' +
-            '<input type="text" id="aiaBaseUrl" autocomplete="off" placeholder="http://192.168.1.20:11434" />' +
+            '<input type="text" id="aiaBaseUrl" autocomplete="off" placeholder="http://localhost:11434" />' +
             '<span class="aiaHelp">Leave empty for the provider default.</span></div>' +
             '<div class="aiaField"><label for="aiaModel">Model</label>' +
             '<div class="aiaRow"><input type="text" id="aiaModel" autocomplete="off" list="aiaModelList" />' +

@@ -1,7 +1,7 @@
 ---
 name: "Mature Content"
 guid: "0fd6a7ab-5519-4aa3-9fd0-bd3f93c1b1f4"
-version: "0.1.1.0"
+version: "0.1.2.0"
 targetAbi: "10.11.0.0"
 framework: "net9.0"
 owner: "Minibenjy"

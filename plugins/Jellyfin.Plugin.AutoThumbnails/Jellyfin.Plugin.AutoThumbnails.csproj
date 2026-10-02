@@ -3,8 +3,8 @@
   <PropertyGroup>
     <RootNamespace>Jellyfin.Plugin.AutoThumbnails</RootNamespace>
     <AssemblyName>Jellyfin.Plugin.AutoThumbnails</AssemblyName>
-    <Version>1.0.0.0</Version>
-    <FileVersion>1.0.0.0</FileVersion>
+    <Version>1.0.1.0</Version>
+    <FileVersion>1.0.1.0</FileVersion>
 
     <!-- NU1902 (SharpCompress GHSA-6c8g-7p36-r338) is a zip-slip issue in path-based
          extraction. This plugin never extracts entries to disk by their stored name;
