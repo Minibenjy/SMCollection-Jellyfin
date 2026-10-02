@@ -15,5 +15,6 @@ public class PluginServiceRegistrator : IPluginServiceRegistrator
     {
         serviceCollection.AddSingleton<ProgressStore>();
         serviceCollection.AddHostedService<ScriptInjectionHostedService>();
+        serviceCollection.AddHostedService<FileTransformationFallbackHostedService>();
     }
 }

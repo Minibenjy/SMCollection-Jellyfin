@@ -7,6 +7,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-02
+
+### AI Assistant 0.1.3, Discover Home 0.2.5, Kids Mode 0.1.3, Mature Content 0.1.3, Enhanced PDF Reader 1.0.2: work on read-only jellyfin-web
+
+- When jellyfin-web is read-only (common in containers that run as a non-root user), the
+  plugins can no longer edit index.html and used to load nothing. They now fall back to the
+  File Transformation plugin when it is installed: the script tag is added as index.html is
+  served, with no change to the container. Nothing happens if the tag is already on disk or
+  File Transformation is absent, so existing setups are unaffected.
+- If you added the script to a JavaScript injector as a workaround, remove that entry once
+  the plugin logs "registered the client script with File Transformation", or the script
+  loads twice.
+
 ## [1.2.4] - 2026-10-02
 
 ### Discover Home 0.2.4: carousel no longer switches tab on touch

@@ -3,8 +3,8 @@
   <PropertyGroup>
     <RootNamespace>Jellyfin.Plugin.MatureContent</RootNamespace>
     <AssemblyName>Jellyfin.Plugin.MatureContent</AssemblyName>
-    <Version>0.1.2.0</Version>
-    <FileVersion>0.1.2.0</FileVersion>
+    <Version>0.1.3.0</Version>
+    <FileVersion>0.1.3.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
