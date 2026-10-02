@@ -718,3 +718,11 @@ body.dh-large-desktop.dh-wide .dh-channel-card.dh-has-logo {
 #indexPage:not([data-discovery-ready]) div#discovery-loading-indicator:not(.show) {
   display: none;
 }
+
+/* Chrome on Android turns a downward drag at the top of the page into
+   pull-to-refresh, and a slightly slanted swipe on a carousel counts. Jellyfin is
+   a single-page app, so a browser reload on Home is never wanted. */
+html,
+body {
+  overscroll-behavior-y: contain;
+}
