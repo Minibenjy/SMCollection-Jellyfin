@@ -7,6 +7,20 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.2.3] - 2026-10-02
+
+### Discover Home 0.2.3: no pull-to-refresh on Home
+
+- Page-level overscroll-behavior-y: contain, so a slanted swipe on the genre/studio
+  carousel no longer triggers the mobile browser reload.
+
+### Troubleshooting note
+
+- If a plugin does nothing on the web client, check the Jellyfin log for
+  "could not modify the web client" / permission denied on jellyfin-web/index.html.
+  In that case add the plugin script (/<Plugin>/ClientScript) to the JavaScript
+  Injector plugin, or make jellyfin-web writable for the server user.
+
 ## [1.2.2] - 2026-10-02
 
 Versions: Discover Home 0.2.2, AI Assistant 0.1.2, Kids Mode 0.1.2, Mature Content 0.1.2, Auto Thumbnails 1.0.1, Enhanced PDF Reader 1.0.1.
