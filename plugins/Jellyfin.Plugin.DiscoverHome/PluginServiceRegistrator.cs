@@ -16,5 +16,6 @@ public class PluginServiceRegistrator : IPluginServiceRegistrator
     {
         serviceCollection.AddSingleton<StudioArtworkCache>();
         serviceCollection.AddHostedService<ScriptInjectionHostedService>();
+        serviceCollection.AddHostedService<FileTransformationFallbackHostedService>();
     }
 }

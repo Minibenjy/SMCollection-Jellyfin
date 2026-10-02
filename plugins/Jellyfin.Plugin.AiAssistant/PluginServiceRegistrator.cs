@@ -55,5 +55,7 @@ public class PluginServiceRegistrator : IPluginServiceRegistrator
         serviceCollection.AddSingleton<ConversationService>();
 
         serviceCollection.AddHostedService<ScriptInjectionHostedService>();
+
+        serviceCollection.AddHostedService<FileTransformationFallbackHostedService>();
     }
 }

@@ -16,5 +16,6 @@ public class PluginServiceRegistrator : IPluginServiceRegistrator
         serviceCollection.AddSingleton<KidsPolicyService>();
         serviceCollection.AddHostedService<KidsStartupHostedService>();
         serviceCollection.AddHostedService<ScriptInjectionHostedService>();
+        serviceCollection.AddHostedService<FileTransformationFallbackHostedService>();
     }
 }

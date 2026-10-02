@@ -1,7 +1,7 @@
 ---
 name: "Discover Home"
 guid: "c3f7a1d8-5b42-4e69-9a0c-7d1e8f3b2a56"
-version: "0.2.4.0"
+version: "0.2.5.0"
 targetAbi: "10.11.0.0"
 framework: "net9.0"
 owner: "Minibenjy"
