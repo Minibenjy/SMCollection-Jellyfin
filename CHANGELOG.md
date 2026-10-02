@@ -7,6 +7,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Discover Home: genre/studio carousel swipe on mobile
+
+- Swiping the genre or studio carousel on a touch screen no longer chains to the
+  page (overscroll-behavior-x: contain, touch-action: pan-x pan-y), which reloaded Home.
+
 ### All plugins: no site-specific defaults, English UI
 
 - Discover Home: badge, search, genre/studio and "Customize home" strings now follow
