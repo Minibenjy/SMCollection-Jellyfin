@@ -474,6 +474,11 @@
     var row = document.createElement("div");
     row.className = "dh-channel-row padded-left";
 
+    // Jellyfin's tab swipe (Home <-> Favourites) arms itself on a touchstart that
+    // reaches the page. Native rows are excluded from it; ours has to be too, or a
+    // sideways swipe on this carousel switches tab. Passive: scrolling is unaffected.
+    row.addEventListener("touchstart", function (e) { e.stopPropagation(); }, { passive: true });
+
     var palette = CHANNEL_PALETTES[type.key] || CHANNEL_PALETTES.genre;
 
     entries.forEach(function (entry, i) {
