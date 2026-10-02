@@ -72,16 +72,16 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Gets or sets the badge text for a movie.</summary>
     /// <remarks>
     /// The badges are drawn entirely in CSS from these values, so that a page full of
-    /// cards costs no per-card JavaScript. They are plain settings rather than
-    /// translations because the wording is a design choice as much as a language one.
+    /// cards costs no per-card JavaScript. Leave empty to use the built-in text for
+    /// the user's interface language (English, Spanish); set a value to override it.
     /// </remarks>
-    public string LabelMovie { get; set; } = "PELÍCULA";
+    public string LabelMovie { get; set; } = "";
 
     /// <summary>Gets or sets the badge text for a series.</summary>
-    public string LabelSeries { get; set; } = "SERIE";
+    public string LabelSeries { get; set; } = "";
 
     /// <summary>Gets or sets the badge text for an episode.</summary>
-    public string LabelEpisode { get; set; } = "EPISODIO";
+    public string LabelEpisode { get; set; } = "";
 
     // ---------------------------------------------------------------- rows
 

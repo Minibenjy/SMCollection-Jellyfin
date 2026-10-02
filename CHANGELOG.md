@@ -7,6 +7,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### All plugins: no site-specific defaults, English UI
+
+- Discover Home: badge, search, genre/studio and "Customize home" strings now follow
+  the interface language (English default, Spanish included) instead of being fixed
+  Spanish. The badge label defaults are empty (= localised built-in text); any value
+  already saved in a server's configuration keeps working untouched.
+- AI Assistant: the endpoint placeholder is the generic http://localhost:11434
+  instead of a LAN address.
+- Admin pages of Mature Content, Kids Mode, Auto Thumbnails and Enhanced PDF Reader:
+  leftover Spanish labels translated to English to match the rest of the UI.
+
 ### Discover Home 0.2.1 — no centered search on mobile
 
 - The centered search box only shows above the sidebar breakpoint (desktop).

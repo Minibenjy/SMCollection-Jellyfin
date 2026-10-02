@@ -75,6 +75,44 @@
     }
   }
 
+  // ---------------------------------------------------------------- i18n
+  // UI strings follow the browser/Jellyfin language. English is the default and
+  // the fallback; add a language by adding one block here.
+  var STRINGS = {
+    en: {
+      badgeMovie: "MOVIE", badgeSeries: "SERIES", badgeEpisode: "EPISODE",
+      typeMovie: "Movie", typeSeries: "Series",
+      searchPlaceholder: "Search movies and series", searchLabel: "Search",
+      genres: "Genres", studios: "Studios",
+      optLargeCards: "Large cards on desktop", optBadges: "Type label on each card",
+      optGenreRow: "Genre carousel", optStudioRow: "Studio carousel",
+      optShuffle: "Shuffle rows on every visit", optPinSidebar: "Pinned sidebar on desktop",
+      optAccent: "Accent colour",
+      customize: "Customize home", close: "Close", reset: "Reset to server defaults"
+    },
+    es: {
+      badgeMovie: "PELÍCULA", badgeSeries: "SERIE", badgeEpisode: "EPISODIO",
+      typeMovie: "Película", typeSeries: "Serie",
+      searchPlaceholder: "Buscar películas y series", searchLabel: "Buscar",
+      genres: "Géneros", studios: "Estudios",
+      optLargeCards: "Tarjetas grandes en escritorio", optBadges: "Etiqueta de tipo en cada tarjeta",
+      optGenreRow: "Carrusel de géneros", optStudioRow: "Carrusel de estudios",
+      optShuffle: "Barajar las filas en cada visita", optPinSidebar: "Barra lateral fija en escritorio",
+      optAccent: "Color de acento",
+      customize: "Personalizar inicio", close: "Cerrar", reset: "Restablecer a los valores del servidor"
+    }
+  };
+
+  function uiLang() {
+    var l = (document.documentElement.lang || navigator.language || "en").toLowerCase();
+    var short = l.split("-")[0];
+    return STRINGS[short] ? short : "en";
+  }
+
+  function T(key) {
+    return (STRINGS[uiLang()] && STRINGS[uiLang()][key]) || STRINGS.en[key] || key;
+  }
+
   // ---------------------------------------------------------------- settings
 
   function applySettings(s) {
@@ -86,9 +124,9 @@
     // pills stay pure CSS — no per-card JavaScript on a page full of cards.
     // JSON.stringify quotes and escapes, so a label with a quote or backslash in
     // it stays a valid CSS string instead of breaking the `content` rule.
-    root.style.setProperty("--dh-label-movie", JSON.stringify(s.LabelMovie || "PELÍCULA"));
-    root.style.setProperty("--dh-label-series", JSON.stringify(s.LabelSeries || "SERIE"));
-    root.style.setProperty("--dh-label-episode", JSON.stringify(s.LabelEpisode || "EPISODIO"));
+    root.style.setProperty("--dh-label-movie", JSON.stringify(s.LabelMovie || T("badgeMovie")));
+    root.style.setProperty("--dh-label-series", JSON.stringify(s.LabelSeries || T("badgeSeries")));
+    root.style.setProperty("--dh-label-episode", JSON.stringify(s.LabelEpisode || T("badgeEpisode")));
 
     var body = document.body;
     body.classList.toggle("dh-pin-sidebar", !!s.PinSidebar);
@@ -198,7 +236,7 @@
 
       var type = document.createElement("span");
       type.className = "dh-suggestion-type";
-      type.textContent = m.type === "Series" ? "Serie" : "Película";
+      type.textContent = m.type === "Series" ? T("typeSeries") : T("typeMovie");
       row.appendChild(type);
 
       row.addEventListener("mousedown", function (e) {
@@ -224,8 +262,8 @@
 
     var input = document.createElement("input");
     input.type = "search";
-    input.placeholder = "Buscar películas y series";
-    input.setAttribute("aria-label", "Buscar");
+    input.placeholder = T("searchPlaceholder");
+    input.setAttribute("aria-label", T("searchLabel"));
 
     var suggestBox = document.createElement("div");
     suggestBox.className = "dh-suggestions";
@@ -300,7 +338,7 @@
     if (settings.EnableGenreRow) {
       types.push({
         key: "genre",
-        heading: "Géneros",
+        heading: T("genres"),
         cacheKey: "dh_genres_v3",
         link: "genreId",
         fetch: function (c) {
@@ -314,7 +352,7 @@
     if (settings.EnableStudioRow) {
       types.push({
         key: "studio",
-        heading: "Estudios",
+        heading: T("studios"),
         cacheKey: "dh_studios_v3",
         link: "studioId",
         fetch: function (c) {
@@ -684,13 +722,13 @@
   var PREFS_CLIENT = "discoverhome";
 
   var USER_OPTIONS = [
-    { key: "LargeDesktopCards", label: "Tarjetas grandes en escritorio", type: "bool" },
-    { key: "ShowTypeBadges", label: "Etiqueta de tipo en cada tarjeta", type: "bool" },
-    { key: "EnableGenreRow", label: "Carrusel de géneros", type: "bool", rows: true },
-    { key: "EnableStudioRow", label: "Carrusel de estudios", type: "bool", rows: true },
-    { key: "ShuffleSections", label: "Barajar las filas en cada visita", type: "bool", rows: true },
-    { key: "PinSidebar", label: "Barra lateral fija en escritorio", type: "bool" },
-    { key: "AccentColor", label: "Color de acento", type: "color" }
+    { key: "LargeDesktopCards", label: T("optLargeCards"), type: "bool" },
+    { key: "ShowTypeBadges", label: T("optBadges"), type: "bool" },
+    { key: "EnableGenreRow", label: T("optGenreRow"), type: "bool", rows: true },
+    { key: "EnableStudioRow", label: T("optStudioRow"), type: "bool", rows: true },
+    { key: "ShuffleSections", label: T("optShuffle"), type: "bool", rows: true },
+    { key: "PinSidebar", label: T("optPinSidebar"), type: "bool" },
+    { key: "AccentColor", label: T("optAccent"), type: "color" }
   ];
 
   var prefsDoc = null;
@@ -796,11 +834,11 @@
     head.className = "dh-prefs-head";
     var title = document.createElement("h2");
     title.id = "dh-prefs-title";
-    title.textContent = "Personalizar inicio";
+    title.textContent = T("customize");
     var close = document.createElement("button");
     close.type = "button";
     close.className = "dh-prefs-close paper-icon-button-light";
-    close.title = "Cerrar";
+    close.title = T("close");
     close.innerHTML = '<span class="material-icons close" aria-hidden="true"></span>';
     close.addEventListener("click", closePanel);
     head.appendChild(title);
@@ -845,7 +883,7 @@
     var reset = document.createElement("button");
     reset.type = "button";
     reset.className = "dh-prefs-reset";
-    reset.textContent = "Restablecer a los valores del servidor";
+    reset.textContent = T("reset");
     reset.addEventListener("click", function () {
       userPrefs = {};
       settings = effectiveSettings();
@@ -875,7 +913,7 @@
     link.href = "#";
     link.className = "navMenuOption lnkMediaFolder emby-button dh-customize-link";
     link.innerHTML = '<span class="material-icons navMenuOptionIcon dashboard_customize" aria-hidden="true"></span>'
-      + '<span class="navMenuOptionText">Personalizar inicio</span>';
+      + '<span class="navMenuOptionText">' + T("customize") + '</span>';
     link.addEventListener("click", function (e) {
       e.preventDefault();
       openPanel();
