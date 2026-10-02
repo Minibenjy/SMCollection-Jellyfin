@@ -7,6 +7,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.2.4] - 2026-10-02
+
+### Discover Home 0.2.4: carousel no longer switches tab on touch
+
+- A sideways swipe on the genre/studio carousel was read by Jellyfin as the tab
+  swipe (Home to Favourites). The row now keeps its touchstart to itself, like
+  the native rows do.
+
 ## [1.2.3] - 2026-10-02
 
 ### Discover Home 0.2.3: no pull-to-refresh on Home
