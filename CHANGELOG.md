@@ -7,6 +7,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-10-02
+
+Versions: Discover Home 0.2.2, AI Assistant 0.1.2, Kids Mode 0.1.2, Mature Content 0.1.2, Auto Thumbnails 1.0.1, Enhanced PDF Reader 1.0.1.
+
 ### Discover Home: genre/studio carousel swipe on mobile
 
 - Swiping the genre or studio carousel on a touch screen no longer chains to the
