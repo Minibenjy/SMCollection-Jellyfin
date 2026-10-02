@@ -12,9 +12,9 @@
         "version": "0.1.1.0",
         "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
         "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.2.2/Jellyfin.Plugin.AiAssistant_0.1.1.0.zip",
-        "checksum": "a0ad0e0a682472646d9c1e6d15993c3a",
-        "timestamp": "2026-10-02T20:17:20Z"
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.2.1/Jellyfin.Plugin.AiAssistant_0.1.1.0.zip",
+        "checksum": "72d012bdcc87ad86e6128897957437b7",
+        "timestamp": "2026-09-30T19:30:18Z"
       },
       {
         "version": "0.1.0.0",
@@ -39,9 +39,9 @@
         "version": "1.0.0.0",
         "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
         "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.2.2/Jellyfin.Plugin.AutoThumbnails_1.0.0.0.zip",
-        "checksum": "bb0194a7b9013276545989c1ce90d24d",
-        "timestamp": "2026-10-02T20:17:20Z"
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.2.1/Jellyfin.Plugin.AutoThumbnails_1.0.0.0.zip",
+        "checksum": "beb13b5e5cd30f1cf203d8b7cbf9bf2f",
+        "timestamp": "2026-09-30T19:30:18Z"
       }
     ]
   },
@@ -58,9 +58,9 @@
         "version": "0.2.1.0",
         "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
         "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.2.2/Jellyfin.Plugin.DiscoverHome_0.2.1.0.zip",
-        "checksum": "6ad8d432ef343bc2b86cd7807d211caf",
-        "timestamp": "2026-10-02T20:17:20Z"
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.2.1/Jellyfin.Plugin.DiscoverHome_0.2.1.0.zip",
+        "checksum": "e2c8f8ec304048b4e8a3d76112b357f8",
+        "timestamp": "2026-09-30T19:30:18Z"
       },
       {
         "version": "0.2.0.0",
@@ -117,9 +117,9 @@
         "version": "1.0.0.0",
         "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
         "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.2.2/Jellyfin.Plugin.EnhancedPdfReader_1.0.0.0.zip",
-        "checksum": "9212d6398030a765e328673d75118fa1",
-        "timestamp": "2026-10-02T20:17:20Z"
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.2.1/Jellyfin.Plugin.EnhancedPdfReader_1.0.0.0.zip",
+        "checksum": "c04a4a80f09eba446c490d27d688729c",
+        "timestamp": "2026-09-30T19:30:18Z"
       }
     ]
   },
@@ -136,9 +136,9 @@
         "version": "0.1.1.0",
         "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
         "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.2.2/Jellyfin.Plugin.KidsMode_0.1.1.0.zip",
-        "checksum": "857957c648c75f6348296d49f97aa6b0",
-        "timestamp": "2026-10-02T20:17:20Z"
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.2.1/Jellyfin.Plugin.KidsMode_0.1.1.0.zip",
+        "checksum": "c764ab0d04525a3f1eb519add2dd8680",
+        "timestamp": "2026-09-30T19:30:18Z"
       },
       {
         "version": "0.1.0.0",
@@ -163,9 +163,9 @@
         "version": "0.1.1.0",
         "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
         "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.2.2/Jellyfin.Plugin.MatureContent_0.1.1.0.zip",
-        "checksum": "6e3f8560c21eadb55144ab32f4d886c8",
-        "timestamp": "2026-10-02T20:17:20Z"
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.2.1/Jellyfin.Plugin.MatureContent_0.1.1.0.zip",
+        "checksum": "00d4e9226f2803bae5e76e5ac5a59311",
+        "timestamp": "2026-09-30T19:30:18Z"
       },
       {
         "version": "0.1.0.0",
