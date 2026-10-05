@@ -1,1 +1,309 @@
-<html><body></body></html>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Artwork Refresher</title>
+</head>
+<body>
+<div id="ArtworkRefresherPage" data-role="page" class="page type-interior pluginConfigurationPage">
+    <style>
+        #ArtworkRefresherPage .arCard { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-radius: .5em; padding: 1em 1.2em; margin: 0 0 1.2em; }
+        #ArtworkRefresherPage .arGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(16em, 1fr)); gap: .5em 1.5em; }
+        #ArtworkRefresherPage .arNote { opacity: .75; font-size: .92em; margin: .4em 0 .8em; }
+        #ArtworkRefresherPage .arWarn { border-left: 3px solid #e0b050; padding-left: .9em; font-size: .92em; margin: .6em 0 1em; opacity: .9; }
+        #ArtworkRefresherPage .arList { max-height: 12em; overflow-y: auto; border: 1px solid rgba(255,255,255,.08); border-radius: .4em; padding: .3em .9em; }
+        #ArtworkRefresherPage .arLog { max-height: 18em; overflow-y: auto; font-family: monospace; font-size: .85em; }
+        #ArtworkRefresherPage .arLog div.ok { color: #7ddc8a; } #ArtworkRefresherPage .arLog div.skip { color: #e0b050; } #ArtworkRefresherPage .arLog div.error { color: #f2726f; }
+        #ArtworkRefresherPage .arBar { height: .5em; background: rgba(255,255,255,.1); border-radius: .3em; overflow: hidden; margin: .6em 0; }
+        #ArtworkRefresherPage .arBarFill { height: 100%; width: 0; background: #00a4dc; }
+        #ArtworkRefresherPage .arActions { display: flex; flex-wrap: wrap; gap: .75em; align-items: center; }
+        #ArtworkRefresherPage .arActions .emby-button { margin: 0; }
+        #ArtworkRefresherPage .arSrc { border-top: 1px solid rgba(255,255,255,.08); padding-top: .8em; margin-top: .8em; }
+    </style>
+
+    <div data-role="content">
+        <div class="content-primary">
+
+            <div class="verticalSection">
+                <h2 class="sectionTitle">Artwork Refresher</h2>
+                <p>Looks for new posters, backdrops, logos and thumbnails from public sources, on a schedule or for one item from its card menu (⋮ → Refresh artwork). Genres, studios and collections get a mosaic made from artwork the server already has. Nothing is installed or changed until you save, and a dry run only reports what it would do.</p>
+                <div class="arWarn" id="arIntegrations"></div>
+            </div>
+
+            <div class="arCard">
+                <h3 style="margin-top:0">Run</h3>
+                <div id="arState"></div>
+                <div class="arBar"><div class="arBarFill" id="arBar"></div></div>
+                <div id="arSummary" class="arNote"></div>
+                <div class="arLog" id="arLog"></div>
+                <div class="arActions" style="margin-top:1em">
+                    <button is="emby-button" type="button" id="arRun" class="raised button-submit"><span>Run now</span></button>
+                    <button is="emby-button" type="button" id="arDry" class="raised"><span>Dry run</span></button>
+                    <button is="emby-button" type="button" id="arCancel" class="raised" disabled><span>Cancel</span></button>
+                </div>
+                <div class="arNote">"Run now" ignores the time window. The scheduled task (Dashboard → Scheduled Tasks → Refresh artwork) wakes up every 30 minutes and only works inside the window and no more often than the interval.</div>
+                <div class="arNote" id="arSched"></div>
+            </div>
+
+            <form id="arForm">
+
+            <div class="arCard">
+                <h3 style="margin-top:0">Schedule</h3>
+                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" id="Enabled" /><span>Scheduled runs enabled</span></label></div>
+                <div class="arGrid">
+                    <div class="inputContainer"><label class="inputLabel inputLabelUnfocused" for="RefreshIntervalHours">Hours between runs</label><input is="emby-input" type="number" id="RefreshIntervalHours" min="1" /></div>
+                    <div class="inputContainer"><label class="inputLabel inputLabelUnfocused" for="MaxRunMinutes">Longest run, minutes (0 = until the window closes)</label><input is="emby-input" type="number" id="MaxRunMinutes" min="0" /></div>
+                </div>
+                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" id="RefreshWindowEnabled" /><span>Only run inside a time window</span></label></div>
+                <div class="arGrid">
+                    <div class="inputContainer"><label class="inputLabel inputLabelUnfocused" for="RefreshWindowStart">Window start (HH:mm)</label><input is="emby-input" type="text" id="RefreshWindowStart" placeholder="02:00" /></div>
+                    <div class="inputContainer"><label class="inputLabel inputLabelUnfocused" for="RefreshWindowEnd">Window end (HH:mm; earlier than the start means it crosses midnight)</label><input is="emby-input" type="text" id="RefreshWindowEnd" placeholder="06:00" /></div>
+                    <div class="inputContainer"><label class="inputLabel inputLabelUnfocused" for="RefreshWindowTimeZone">Time zone id (empty = server time zone)</label><input is="emby-input" type="text" id="RefreshWindowTimeZone" placeholder="Europe/Madrid" /></div>
+                </div>
+            </div>
+
+            <div class="arCard">
+                <h3 style="margin-top:0">What to refresh</h3>
+                <div class="selectContainer"><label class="selectLabel" for="RefreshMode">Mode</label>
+                    <select is="emby-select" id="RefreshMode"><option value="MissingOnly">Only fill empty slots</option><option value="Replace">Replace (cycles through other available images)</option></select></div>
+                <div class="arWarn" id="arReplaceWarn" style="display:none">Replacing artwork may overwrite images you picked by hand or that other Jellyfin image providers fetched.</div>
+                <div class="arGrid" id="arTypes">
+                    <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-type="Primary" /><span>Primary (poster / cover)</span></label></div>
+                    <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-type="Backdrop" /><span>Backdrop</span></label></div>
+                    <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-type="Logo" /><span>Logo</span></label></div>
+                    <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-type="Thumb" /><span>Thumb</span></label></div>
+                </div>
+                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" id="IncludePeople" /><span>Also refresh people (after everything else)</span></label></div>
+                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" id="DryRun" /><span>Dry run for every run (log only, save nothing)</span></label></div>
+                <div class="inputContainer"><label class="inputLabel inputLabelUnfocused" for="PreferredLanguages">Preferred image languages, comma separated (empty = server metadata language)</label><input is="emby-input" type="text" id="PreferredLanguages" placeholder="en, es" /></div>
+                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" id="IncludeLanguageNeutralImages" /><span>Accept images without text</span></label></div>
+            </div>
+
+            <div class="arCard">
+                <h3 style="margin-top:0">Libraries and protection</h3>
+                <div class="arNote">Excluded libraries are never touched. If you include some libraries, only those are refreshed (genres, studios and collections are not tied to a library).</div>
+                <div class="arGrid">
+                    <div><strong>Included</strong> (none ticked = all)<div class="arList" id="arIncluded"></div></div>
+                    <div><strong>Excluded</strong><div class="arList" id="arExcluded"></div></div>
+                </div>
+                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" id="RespectNativeLockData" /><span>Leave items locked in Jellyfin alone</span></label></div>
+                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" id="ProtectBookPrimary" /><span>Protect the primary image of books, comics and magazines</span></label></div>
+                <div class="arNote">Book covers are protected by default so they stay what a local thumbnail plugin (for example Auto Thumbnails) made from the file.</div>
+                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" id="RespectAutoThumbnailsMarker" /><span>Keep the primary image of items carrying the Auto Thumbnails marker</span></label></div>
+                <h4>Image locks</h4>
+                <div class="arNote">Locks on a library or an item stop this plugin from changing the chosen image type (or all). Add them from here; the id is in the item's URL.</div>
+                <div id="arLocks"></div>
+                <div class="arGrid">
+                    <div class="inputContainer"><label class="inputLabel inputLabelUnfocused" for="arLockId">Item or library id</label><input is="emby-input" type="text" id="arLockId" /></div>
+                    <div class="selectContainer"><label class="selectLabel" for="arLockKind">Target</label><select is="emby-select" id="arLockKind"><option value="item">Item</option><option value="library">Library</option></select></div>
+                    <div class="selectContainer"><label class="selectLabel" for="arLockType">Image type</label><select is="emby-select" id="arLockType"><option value="">All types</option><option>Primary</option><option>Backdrop</option><option>Logo</option><option>Thumb</option></select></div>
+                </div>
+                <button is="emby-button" type="button" id="arLockAdd" class="raised"><span>Add lock</span></button>
+            </div>
+
+            <div class="arCard">
+                <h3 style="margin-top:0">Shared images (genres, studios, collections, Home)</h3>
+                <div class="arNote">A genre or studio has one image for everybody, so its mosaic only uses content that is safe for every user, as you define it here. The plugin does not read the private rules of other plugins (Kids, Mature): list their libraries and tags here.</div>
+                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" id="MosaicEnabled" /><span>Make mosaics for genres, studios and collections</span></label></div>
+                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" id="SharedArtworkSafetyEnabled" /><span>Apply the safety rules below</span></label></div>
+                <div class="arGrid">
+                    <div><strong>Sensitive libraries</strong> (never in a shared image)<div class="arList" id="arSensitive"></div></div>
+                    <div>
+                        <div class="inputContainer"><label class="inputLabel inputLabelUnfocused" for="SensitiveTags">Sensitive tags, comma separated</label><input is="emby-input" type="text" id="SensitiveTags" /></div>
+                        <div class="inputContainer"><label class="inputLabel inputLabelUnfocused" for="MaximumSharedParentalRatingValue">Highest parental rating value allowed (-1 = no limit)</label><input is="emby-input" type="number" id="MaximumSharedParentalRatingValue" /></div>
+                        <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" id="ExcludeUnratedFromSharedArtwork" /><span>Leave unrated items out</span></label></div>
+                    </div>
+                </div>
+                <div class="arNote">Home images (GET ArtworkRefresher/Home/Sections and /Home/{key}/Image) are built per user from what that user can see; for non-administrators the rules above apply too.</div>
+            </div>
+
+            <div class="arCard">
+                <h3 style="margin-top:0">Sources</h3>
+                <div class="arNote">Keys are stored in this plugin's configuration file on the server and are never sent back to the browser (a stored key shows as ***). Leave *** to keep it, clear the field to delete it. A source with no key is skipped.</div>
+                <div class="arSrc" data-src="Tmdb"><div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-f="Enabled" /><span><strong>TMDb</strong> – movies, shows, seasons, episodes, people, collections, studios</span></label></div>
+                    <div class="arGrid"><div class="inputContainer"><label class="inputLabel inputLabelUnfocused">API key or v4 read token</label><input is="emby-input" type="password" data-f="ApiKey" autocomplete="off" /></div>
+                    <div class="inputContainer"><label class="inputLabel inputLabelUnfocused">Requests per minute</label><input is="emby-input" type="number" data-f="RequestsPerMinute" /></div></div>
+                    <div class="arNote">Free for non-commercial use with attribution: "This product uses the TMDB API but is not endorsed or certified by TMDB." <a href="https://www.themoviedb.org/api-terms-of-use" target="_blank" rel="noopener">Terms</a></div></div>
+                <div class="arSrc" data-src="Fanart"><div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-f="Enabled" /><span><strong>Fanart.tv</strong> – posters, backdrops, logos, thumbs, music (by id only)</span></label></div>
+                    <div class="arGrid"><div class="inputContainer"><label class="inputLabel inputLabelUnfocused">API key</label><input is="emby-input" type="password" data-f="ApiKey" autocomplete="off" /></div>
+                    <div class="inputContainer"><label class="inputLabel inputLabelUnfocused">Personal client key (optional)</label><input is="emby-input" type="password" data-f="ApiKey2" autocomplete="off" /></div>
+                    <div class="inputContainer"><label class="inputLabel inputLabelUnfocused">Requests per minute</label><input is="emby-input" type="number" data-f="RequestsPerMinute" /></div></div>
+                    <div class="arNote">Use your own keys; Fanart.tv does not necessarily own the copyright of the images. <a href="https://fanart.tv/api-docs/" target="_blank" rel="noopener">Terms</a></div></div>
+                <div class="arSrc" data-src="Wikimedia"><div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-f="Enabled" /><span><strong>Wikimedia Commons</strong> – people, studios, artists (no key)</span></label></div>
+                    <div class="arGrid"><div class="inputContainer"><label class="inputLabel inputLabelUnfocused">Requests per minute</label><input is="emby-input" type="number" data-f="RequestsPerMinute" /></div></div>
+                    <div class="arNote">Every file has its own licence (some require attribution or share-alike). Non-free files are skipped; the licence is kept in the log.</div></div>
+                <div class="arSrc" data-src="OpenLibrary"><div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-f="Enabled" /><span><strong>Open Library</strong> – book covers (no key)</span></label></div>
+                    <div class="arGrid"><div class="inputContainer"><label class="inputLabel inputLabelUnfocused">Requests per minute</label><input is="emby-input" type="number" data-f="RequestsPerMinute" /></div></div>
+                    <div class="arNote">Only reached for books when you turn the book protection off or force one item.</div></div>
+                <div class="arSrc" data-src="CoverArtArchive"><div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-f="Enabled" /><span><strong>Cover Art Archive</strong> – album covers by MusicBrainz id (no key)</span></label></div>
+                    <div class="arGrid"><div class="inputContainer"><label class="inputLabel inputLabelUnfocused">Requests per minute</label><input is="emby-input" type="number" data-f="RequestsPerMinute" /></div></div>
+                    <div class="arNote">Covers are used at the re-user's own responsibility; they are not automatically free content.</div></div>
+                <div class="arSrc" data-src="GoogleCse"><div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-f="Enabled" /><span><strong>Google Programmable Search</strong> – last resort (off by default)</span></label></div>
+                    <div class="arGrid"><div class="inputContainer"><label class="inputLabel inputLabelUnfocused">API key</label><input is="emby-input" type="password" data-f="ApiKey" autocomplete="off" /></div>
+                    <div class="inputContainer"><label class="inputLabel inputLabelUnfocused">Search engine id (cx)</label><input is="emby-input" type="password" data-f="ApiKey2" autocomplete="off" /></div>
+                    <div class="inputContainer"><label class="inputLabel inputLabelUnfocused">Requests per minute</label><input is="emby-input" type="number" data-f="RequestsPerMinute" /></div></div>
+                    <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" id="GoogleSafeSearch" /><span>SafeSearch</span></label></div>
+                    <div class="arWarn">Web image search does not establish that an image may legally be reused, even with a rights filter. There is no HTML scraping in this plugin: only the official API with your own key. Always queried last.</div></div>
+            </div>
+
+            <div class="arCard">
+                <h3 style="margin-top:0">Limits and access</h3>
+                <div class="arGrid">
+                    <div class="inputContainer"><label class="inputLabel inputLabelUnfocused" for="MinimumImageWidth">Smallest accepted width (px)</label><input is="emby-input" type="number" id="MinimumImageWidth" /></div>
+                    <div class="inputContainer"><label class="inputLabel inputLabelUnfocused" for="MinimumImageHeight">Smallest accepted height (px)</label><input is="emby-input" type="number" id="MinimumImageHeight" /></div>
+                    <div class="inputContainer"><label class="inputLabel inputLabelUnfocused" for="MaximumDownloadMb">Largest download (MB)</label><input is="emby-input" type="number" id="MaximumDownloadMb" /></div>
+                    <div class="inputContainer"><label class="inputLabel inputLabelUnfocused" for="RetryAfterDays">Days before retrying an item with no image</label><input is="emby-input" type="number" id="RetryAfterDays" /></div>
+                </div>
+                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" id="AllowNonAdminItemRefresh" /><span>Let non-administrators refresh one item they can see (fill-missing only, with a cooldown)</span></label></div>
+                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" id="InjectClientScript" /><span>Add the card-menu script to the web client (needs a restart to take effect)</span></label></div>
+            </div>
+
+            <div class="arActions">
+                <button is="emby-button" type="submit" class="raised button-submit block"><span>Save</span></button>
+                <span id="arSaved" class="arNote"></span>
+            </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        (function () {
+            var page = document.querySelector('#ArtworkRefresherPage');
+            var cfg = null, libs = [], since = 0, timer = null;
+            var SOURCES = ['Tmdb', 'Fanart', 'Wikimedia', 'OpenLibrary', 'CoverArtArchive', 'GoogleCse'];
+            var NUMS = ['RefreshIntervalHours', 'MaxRunMinutes', 'MinimumImageWidth', 'MinimumImageHeight', 'RetryAfterDays', 'MaximumSharedParentalRatingValue'];
+            var BOOLS = ['Enabled', 'RefreshWindowEnabled', 'IncludePeople', 'DryRun', 'IncludeLanguageNeutralImages', 'RespectNativeLockData', 'ProtectBookPrimary', 'RespectAutoThumbnailsMarker',
+                'MosaicEnabled', 'SharedArtworkSafetyEnabled', 'ExcludeUnratedFromSharedArtwork', 'AllowNonAdminItemRefresh', 'InjectClientScript'];
+            var TEXTS = ['RefreshWindowStart', 'RefreshWindowEnd', 'RefreshWindowTimeZone'];
+
+            function $(id) { return page.querySelector('#' + id); }
+            function call(m, p, b) {
+                var o = { type: m, url: ApiClient.getUrl(p) };
+                if (b !== undefined) { o.data = JSON.stringify(b); o.contentType = 'application/json'; }
+                if (m === 'GET') { o.dataType = 'json'; }
+                return ApiClient.ajax(o);
+            }
+            function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+            function split(s) { return (s || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean); }
+            function norm(id) { return String(id).replace(/-/g, '').toLowerCase(); }
+
+            function libList(el, selected) {
+                var sel = (selected || []).map(norm);
+                el.innerHTML = libs.map(function (l) {
+                    return '<div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-lib="' + esc(l.Id) + '"' + (sel.indexOf(norm(l.Id)) >= 0 ? ' checked' : '') + ' /><span>' + esc(l.Name) + '</span></label></div>';
+                }).join('') || '<div class="arNote">No libraries.</div>';
+            }
+            function libPick(el) { return [].map.call(el.querySelectorAll('input:checked'), function (i) { return i.getAttribute('data-lib'); }); }
+
+            function render() {
+                BOOLS.forEach(function (k) { $(k).checked = !!cfg[k]; });
+                NUMS.forEach(function (k) { $(k).value = cfg[k]; });
+                TEXTS.forEach(function (k) { $(k).value = cfg[k] || ''; });
+                $('RefreshMode').value = cfg.RefreshMode === 1 || cfg.RefreshMode === 'Replace' ? 'Replace' : 'MissingOnly';
+                $('arReplaceWarn').style.display = $('RefreshMode').value === 'Replace' ? '' : 'none';
+                $('PreferredLanguages').value = (cfg.PreferredLanguages || []).join(', ');
+                $('SensitiveTags').value = (cfg.SensitiveTags || []).join(', ');
+                $('MaximumDownloadMb').value = Math.round(cfg.MaximumDownloadBytes / 1048576);
+                var types = cfg.EnabledImageTypes || [];
+                [].forEach.call(page.querySelectorAll('#arTypes input'), function (i) { i.checked = types.indexOf(i.getAttribute('data-type')) >= 0; });
+                libList($('arIncluded'), cfg.IncludedLibraryIds); libList($('arExcluded'), cfg.ExcludedLibraryIds); libList($('arSensitive'), cfg.SensitiveLibraryIds);
+                SOURCES.forEach(function (s) {
+                    var box = page.querySelector('.arSrc[data-src="' + s + '"]'), v = cfg.Sources[s];
+                    [].forEach.call(box.querySelectorAll('[data-f]'), function (i) {
+                        var f = i.getAttribute('data-f');
+                        if (i.type === 'checkbox') { i.checked = !!v[f]; } else { i.value = v[f] == null ? '' : v[f]; }
+                    });
+                });
+                $('GoogleSafeSearch').checked = !!cfg.Sources.GoogleSafeSearch;
+                renderLocks();
+            }
+
+            function renderLocks() {
+                var rows = (cfg.ImageLocks || []).map(function (r, i) {
+                    var name = (libs.filter(function (l) { return norm(l.Id) === norm(r.TargetId); })[0] || {}).Name;
+                    return '<div class="arActions"><span>' + (r.IsLibrary ? 'Library' : 'Item') + ' ' + esc(name || r.TargetId) + ' – ' + esc(r.ImageType || 'all types') + '</span><button is="emby-button" type="button" class="raised" data-unlock="' + i + '"><span>Remove</span></button></div>';
+                });
+                $('arLocks').innerHTML = rows.join('') || '<div class="arNote">No locks.</div>';
+            }
+
+            function collect() {
+                var c = JSON.parse(JSON.stringify(cfg));
+                BOOLS.forEach(function (k) { c[k] = $(k).checked; });
+                NUMS.forEach(function (k) { c[k] = parseInt($(k).value, 10); if (isNaN(c[k])) { c[k] = cfg[k]; } });
+                TEXTS.forEach(function (k) { c[k] = $(k).value.trim(); });
+                c.RefreshMode = $('RefreshMode').value;
+                c.PreferredLanguages = split($('PreferredLanguages').value);
+                c.SensitiveTags = split($('SensitiveTags').value);
+                c.MaximumDownloadBytes = Math.max(1, parseInt($('MaximumDownloadMb').value, 10) || 20) * 1048576;
+                c.EnabledImageTypes = [].filter.call(page.querySelectorAll('#arTypes input'), function (i) { return i.checked; }).map(function (i) { return i.getAttribute('data-type'); });
+                c.IncludedLibraryIds = libPick($('arIncluded')); c.ExcludedLibraryIds = libPick($('arExcluded')); c.SensitiveLibraryIds = libPick($('arSensitive'));
+                SOURCES.forEach(function (s) {
+                    var box = page.querySelector('.arSrc[data-src="' + s + '"]');
+                    [].forEach.call(box.querySelectorAll('[data-f]'), function (i) {
+                        var f = i.getAttribute('data-f');
+                        c.Sources[s][f] = i.type === 'checkbox' ? i.checked : (f === 'RequestsPerMinute' ? (parseInt(i.value, 10) || 0) : i.value);
+                    });
+                });
+                c.Sources.GoogleSafeSearch = $('GoogleSafeSearch').checked;
+                return c;
+            }
+
+            function load() {
+                Dashboard.showLoadingMsg();
+                Promise.all([call('GET', 'ArtworkRefresher/Libraries'), call('GET', 'ArtworkRefresher/Configuration'), call('GET', 'ArtworkRefresher/Capabilities')]).then(function (r) {
+                    libs = r[0]; cfg = r[1].Configuration;
+                    var s = r[1].Scheduler || {};
+                    $('arSched').textContent = 'Last run: ' + (s.LastRunCompletedUtc || 'never') + (s.LastRunStatus ? ' (' + s.LastRunStatus + ')' : '') + '. Next eligible: ' + (s.NextEligibleRunUtc || 'as soon as the window opens') + '.';
+                    var inte = r[2].Integrations || {}, found = Object.keys(inte).filter(function (k) { return inte[k]; });
+                    $('arIntegrations').textContent = 'Plugin ' + r[2].PluginVersion + '. Optional plugins detected: ' + (found.join(', ') || 'none') + '. None is required.';
+                    render(); Dashboard.hideLoadingMsg(); poll();
+                }, function () { Dashboard.hideLoadingMsg(); $('arSaved').textContent = 'Could not load the settings (administrator needed).'; });
+            }
+
+            function poll() {
+                clearTimeout(timer);
+                call('GET', 'ArtworkRefresher/Status?since=' + since).then(function (s) {
+                    var running = s.State === 'running' || s.State === 'cancelling';
+                    $('arState').textContent = s.State + (s.Phase ? ' – ' + s.Phase : '') + (s.DryRun ? ' (dry run)' : '') + (s.Total ? ' – ' + s.Processed + ' / ' + s.Total : '');
+                    $('arBar').style.width = (s.Percent || 0) + '%';
+                    var m = s.Summary || {};
+                    $('arSummary').textContent = 'Scanned ' + m.Scanned + ', updated ' + m.Updated + ', no image found ' + m.NoCandidate + ', locked ' + m.SkippedLocked + ', protected ' + m.SkippedProtected + ', recent ' + m.SkippedFresh + ', rate limited ' + m.RateLimited + ', failed ' + m.Failed +
+                        '. ' + Object.keys(s.Sources || {}).map(function (k) { var c = s.Sources[k]; return k + ': ' + c.Queries + ' queries, ' + c.Downloads + ' downloads, ' + c.TooManyRequests + ' x 429, ' + c.Failures + ' failures'; }).join('; ');
+                    var log = $('arLog');
+                    (s.Log || []).forEach(function (e) { var d = document.createElement('div'); d.className = e.Level; d.textContent = new Date(e.Timestamp + 'Z').toLocaleTimeString() + '  ' + e.Message; log.appendChild(d); });
+                    if (s.Log && s.Log.length) { log.scrollTop = log.scrollHeight; }
+                    since = s.LatestSequence || since;
+                    $('arRun').disabled = $('arDry').disabled = running; $('arCancel').disabled = !running;
+                    timer = setTimeout(poll, running ? 1500 : 6000);
+                }, function () { timer = setTimeout(poll, 10000); });
+            }
+
+            function start(dry) { $('arLog').innerHTML = ''; since = 0; call('POST', 'ArtworkRefresher/Run', { DryRun: dry }).then(poll, function () { Dashboard.alert('A run is already in progress.'); }); }
+
+            page.addEventListener('click', function (e) {
+                var b = e.target.closest('button');
+                if (!b) { return; }
+                if (b.id === 'arRun') { start(false); }
+                else if (b.id === 'arDry') { start(true); }
+                else if (b.id === 'arCancel') { call('POST', 'ArtworkRefresher/Cancel').then(poll); }
+                else if (b.id === 'arLockAdd') {
+                    var id = $('arLockId').value.trim();
+                    if (!/^[0-9a-fA-F-]{32,36}$/.test(id)) { Dashboard.alert('Enter a valid item or library id.'); return; }
+                    call('PUT', 'ArtworkRefresher/Locks', { TargetId: id, IsLibrary: $('arLockKind').value === 'library', ImageType: $('arLockType').value }).then(function () { $('arLockId').value = ''; return call('GET', 'ArtworkRefresher/Locks'); }).then(function (l) { cfg.ImageLocks = l; renderLocks(); });
+                } else if (b.hasAttribute('data-unlock')) {
+                    var r = cfg.ImageLocks[parseInt(b.getAttribute('data-unlock'), 10)];
+                    call('DELETE', 'ArtworkRefresher/Locks/' + r.TargetId + (r.ImageType ? '?imageType=' + encodeURIComponent(r.ImageType) : '')).then(function () { return call('GET', 'ArtworkRefresher/Locks'); }).then(function (l) { cfg.ImageLocks = l; renderLocks(); });
+                }
+            });
+            $('RefreshMode').addEventListener('change', function () { $('arReplaceWarn').style.display = this.value === 'Replace' ? '' : 'none'; });
+            $('arForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                Dashboard.showLoadingMsg();
+                call('POST', 'ArtworkRefresher/Configuration', collect()).then(function () { Dashboard.hideLoadingMsg(); $('arSaved').textContent = 'Saved.'; return call('GET', 'ArtworkRefresher/Configuration'); }).then(function (r) { cfg = r.Configuration; render(); }, function () { Dashboard.hideLoadingMsg(); $('arSaved').textContent = 'Could not save.'; });
+            });
+            page.addEventListener('pageshow', load);
+            page.addEventListener('pagehide', function () { clearTimeout(timer); });
+        })();
+    </script>
+</div>
+</body>
+</html>

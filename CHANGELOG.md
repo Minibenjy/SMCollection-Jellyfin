@@ -7,6 +7,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Artwork Refresher 1.0.0 (new plugin, release candidate)
+
+- New plugin: refreshes posters, backdrops, logos and thumbnails from TMDb, Fanart.tv, Wikimedia Commons, Open Library, Cover Art Archive and (opt-in) Google Programmable Search, on a schedule inside a configurable time window, or for one item from the card menu (Refresh artwork) / POST /ArtworkRefresher/Item/{id}.
+- Genres, studios and collections get a deterministic local mosaic built only from content that is safe for every user under rules the administrator sets; Home sections get per-user mosaics over HTTP.
+- Never touches excluded libraries, items locked in Jellyfin, items with a plugin image lock, or the primary image of books and Auto Thumbnails items. Never writes files next to media.
+- Built and unit tested (harness with 200+ checks); not yet run on a live Jellyfin server.
+
 ## [1.3.1] - 2026-10-02
 
 - File Transformation fallback (1.3.0) never ran: it registered under a different pattern string than other plugins and File Transformation only runs one pipeline per pattern. Now registers under the shared "index.html" pattern. AI Assistant 0.1.4, Discover Home 0.2.6, Kids Mode 0.1.4, Mature Content 0.1.4, Enhanced PDF Reader 1.0.3.
