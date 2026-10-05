@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Jellyfin.Plugin.ArtworkRefresher.TestHarness</RootNamespace>
+    <AssemblyName>Jellyfin.Plugin.ArtworkRefresher.TestHarness</AssemblyName>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <NoWarn>$(NoWarn);NU1902</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\plugins\Jellyfin.Plugin.ArtworkRefresher\Jellyfin.Plugin.ArtworkRefresher.csproj" />
+  </ItemGroup>
+
+</Project>

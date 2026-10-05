@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Plugin.DiscoverHom
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Plugin.ArtworkRefresher", "plugins\Jellyfin.Plugin.ArtworkRefresher\Jellyfin.Plugin.ArtworkRefresher.csproj", "{72FD9B07-7D9D-443A-9FFC-D7019C42B38B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Plugin.ArtworkRefresher.TestHarness", "tests\Jellyfin.Plugin.ArtworkRefresher.TestHarness\Jellyfin.Plugin.ArtworkRefresher.TestHarness.csproj", "{58B00E80-2541-4E3C-A3AE-C7471F798007}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -143,6 +145,18 @@ Global
 		{72FD9B07-7D9D-443A-9FFC-D7019C42B38B}.Release|x64.Build.0 = Release|Any CPU
 		{72FD9B07-7D9D-443A-9FFC-D7019C42B38B}.Release|x86.ActiveCfg = Release|Any CPU
 		{72FD9B07-7D9D-443A-9FFC-D7019C42B38B}.Release|x86.Build.0 = Release|Any CPU
+		{58B00E80-2541-4E3C-A3AE-C7471F798007}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58B00E80-2541-4E3C-A3AE-C7471F798007}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58B00E80-2541-4E3C-A3AE-C7471F798007}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{58B00E80-2541-4E3C-A3AE-C7471F798007}.Debug|x64.Build.0 = Debug|Any CPU
+		{58B00E80-2541-4E3C-A3AE-C7471F798007}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{58B00E80-2541-4E3C-A3AE-C7471F798007}.Debug|x86.Build.0 = Debug|Any CPU
+		{58B00E80-2541-4E3C-A3AE-C7471F798007}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58B00E80-2541-4E3C-A3AE-C7471F798007}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58B00E80-2541-4E3C-A3AE-C7471F798007}.Release|x64.ActiveCfg = Release|Any CPU
+		{58B00E80-2541-4E3C-A3AE-C7471F798007}.Release|x64.Build.0 = Release|Any CPU
+		{58B00E80-2541-4E3C-A3AE-C7471F798007}.Release|x86.ActiveCfg = Release|Any CPU
+		{58B00E80-2541-4E3C-A3AE-C7471F798007}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -157,5 +171,6 @@ Global
 		{BDAE2FC4-6809-4F5A-9C9A-FB79A4AFFD5F} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{49F7E060-3B10-4755-9B90-DD6303D1216C} = {07D57EEB-2F50-60C4-C011-FE4FA775C9A8}
 		{72FD9B07-7D9D-443A-9FFC-D7019C42B38B} = {07D57EEB-2F50-60C4-C011-FE4FA775C9A8}
+		{58B00E80-2541-4E3C-A3AE-C7471F798007} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal

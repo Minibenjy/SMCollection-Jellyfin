@@ -67,7 +67,7 @@ public sealed class GoogleCseSource : IArtworkSource
         foreach (var item in items.EnumerateArray())
         {
             var link = SourceHelpers.Str(item, "link");
-            if (link is null || !Uri.TryCreate(link, UriKind.Absolute, out var uri))
+            if (!SourceHelpers.TryHttps(link, out var uri))
             {
                 continue;
             }

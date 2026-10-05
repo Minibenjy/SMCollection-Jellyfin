@@ -52,6 +52,19 @@ public static class SourceHelpers
     }
 
     /// <summary>
+    /// Parses an address and accepts only https. Every candidate goes through this, so a source
+    /// can never hand the downloader a plain-http or non-web address.
+    /// </summary>
+    /// <param name="text">The text.</param>
+    /// <param name="uri">The address.</param>
+    /// <returns>True when it is an absolute https address.</returns>
+    public static bool TryHttps(string? text, out Uri uri)
+    {
+        uri = null!;
+        return Uri.TryCreate(text, UriKind.Absolute, out var parsed) && parsed.Scheme == Uri.UriSchemeHttps && (uri = parsed) is not null;
+    }
+
+    /// <summary>
     /// Adds a resolution bonus, so larger images win ties.
     /// </summary>
     /// <param name="width">The width.</param>

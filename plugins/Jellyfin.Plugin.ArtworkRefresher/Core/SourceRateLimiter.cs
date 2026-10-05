@@ -38,16 +38,11 @@ public sealed class SourceRateLimiter
     /// Waits until one request may be sent to the source.
     /// </summary>
     /// <param name="sourceId">The source.</param>
-    /// <param name="requestsPerMinute">The budget; zero or less means unlimited.</param>
+    /// <param name="requestsPerMinute">The budget; zero or less means unlimited (a Retry-After still applies).</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task that completes when a request may go.</returns>
     public async Task WaitAsync(string sourceId, int requestsPerMinute, CancellationToken cancellationToken)
     {
-        if (requestsPerMinute <= 0)
-        {
-            return;
-        }
-
         var bucket = _buckets.GetOrAdd(sourceId, _ => new Bucket());
         while (true)
         {
@@ -55,7 +50,7 @@ public sealed class SourceRateLimiter
             lock (bucket)
             {
                 var now = _clock();
-                var interval = TimeSpan.FromMinutes(1.0 / requestsPerMinute);
+                var interval = requestsPerMinute <= 0 ? TimeSpan.Zero : TimeSpan.FromMinutes(1.0 / requestsPerMinute);
                 var ready = bucket.NextAllowed > bucket.PenaltyUntil ? bucket.NextAllowed : bucket.PenaltyUntil;
                 if (ready <= now)
                 {

@@ -43,7 +43,7 @@ public sealed class FanartSource : IArtworkSource
             foreach (var e in array.EnumerateArray())
             {
                 var url = SourceHelpers.Str(e, "url");
-                if (string.IsNullOrEmpty(url) || !Uri.TryCreate(url, UriKind.Absolute, out var uri))
+                if (!SourceHelpers.TryHttps(url, out var uri))
                 {
                     continue;
                 }

@@ -50,7 +50,7 @@ public sealed class CoverArtArchiveSource : IArtworkSource
             }
 
             url ??= SourceHelpers.Str(img, "image");
-            if (url is null || !Uri.TryCreate(url, UriKind.Absolute, out var uri))
+            if (!SourceHelpers.TryHttps(url, out var uri))
             {
                 continue;
             }

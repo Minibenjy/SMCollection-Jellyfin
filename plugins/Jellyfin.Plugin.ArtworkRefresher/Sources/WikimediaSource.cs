@@ -69,7 +69,7 @@ public sealed partial class WikimediaSource : IArtworkSource
 
             // The thumbnail URL is a raster (a PNG even for an SVG) at a sensible size.
             var url = SourceHelpers.Str(info, "thumburl") ?? SourceHelpers.Str(info, "url");
-            if (string.IsNullOrEmpty(url) || !Uri.TryCreate(url, UriKind.Absolute, out var uri))
+            if (!SourceHelpers.TryHttps(url, out var uri))
             {
                 continue;
             }

@@ -17,8 +17,4 @@
     <EmbeddedResource Include="Web\artworkRefresher.js" />
   </ItemGroup>
 
-  <ItemGroup>
-    <InternalsVisibleTo Include="Jellyfin.Plugin.ArtworkRefresher.TestHarness" />
-  </ItemGroup>
-
 </Project>
