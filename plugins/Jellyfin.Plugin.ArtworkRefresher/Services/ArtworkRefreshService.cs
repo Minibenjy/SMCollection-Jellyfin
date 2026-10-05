@@ -33,6 +33,7 @@ public sealed class ArtworkRefreshService : IDisposable
 {
     private const int MaxLogEntries = 500;
     private const string AutoThumbnailsMarker = "AutoThumbnails";
+    private const int MaxAttemptsPerSlot = 6;
 
     private static readonly IArtworkSource[] Sources =
     [
@@ -525,7 +526,9 @@ public sealed class ArtworkRefreshService : IDisposable
 
             var slot = SlotFor(type);
             var state = State.Get(item.Id, slot.Key);
-            var ownMosaic = state?.Source == SourceIds.LocalMosaic;
+            // Only an image that is still byte-for-byte the mosaic this plugin made counts as its own;
+            // the state alone proves nothing (somebody may have replaced the image since).
+            var ownMosaic = OwnsCurrentImage(item, slot, state);
             var decision = ImageLockPolicy.Evaluate(
                 configuration,
                 new LockContext
@@ -593,7 +596,8 @@ public sealed class ArtworkRefreshService : IDisposable
                 continue;
             }
 
-            if (allowed.All(s => remote.TryGetValue(s.Type, out var l) && l.Count > 0))
+            // Enough candidates to try (a found candidate is not yet a usable image): stop asking more sources.
+            if (allowed.All(s => remote.TryGetValue(s.Type, out var l) && l.Count >= MaxAttemptsPerSlot))
             {
                 break;
             }
@@ -613,12 +617,9 @@ public sealed class ArtworkRefreshService : IDisposable
                     remote[c.ImageType] = list;
                 }
 
-                // Within one source the order is by score; across sources the source order wins, so only
-                // add what an earlier source did not already supply for the type.
-                if (list.Count == 0 || list.All(x => x.Source == c.Source))
-                {
-                    list.Add(c);
-                }
+                // Sources are asked in the configured order and each answers best first, so appending keeps
+                // the priority: a later source is a real fallback when the earlier images fail to download.
+                list.Add(c);
             }
         }
 
@@ -649,7 +650,7 @@ public sealed class ArtworkRefreshService : IDisposable
                     }
                 }
 
-                foreach (var c in pool.Take(3))
+                foreach (var c in pool.Take(MaxAttemptsPerSlot))
                 {
                     if (options.DryRun)
                     {
@@ -738,6 +739,43 @@ public sealed class ArtworkRefreshService : IDisposable
                 continue;
             }
 
+            // The decision above is a few seconds old (downloads take time). Look again just before writing:
+            // Jellyfin may have started its own refresh, an administrator may have locked the item or put
+            // an image there, or the Auto Thumbnails marker may have appeared. Jellyfin offers no lock a
+            // plugin can take, so this narrows the window; it cannot close it.
+            if (_providerManager.GetRefreshProgress(item.Id) is not null)
+            {
+                outcome.Status = "fresh";
+                outcome.Detail = "Jellyfin is refreshing this item; try again later";
+                Bump(s => s.SkippedFresh++);
+                continue;
+            }
+
+            var ownedNow = OwnsCurrentImage(item, slot, State.Get(item.Id, slot.Key));
+            var recheck = ImageLockPolicy.Evaluate(
+                configuration,
+                new LockContext
+                {
+                    Kind = kind,
+                    ItemId = item.Id,
+                    LibraryIds = libraries,
+                    NativeLocked = item.IsLocked,
+                    HasAutoThumbnailsMarker = item.ProviderIds.ContainsKey(AutoThumbnailsMarker),
+                    Slot = slot,
+                    SlotHasImage = item.HasImage(slot.Type, slot.Index) && !ownedNow,
+                    Force = options.Force,
+                    OverrideExcludedLibraries = options.OverrideExcludedLibraries,
+                    IsCategory = category
+                },
+                options.Mode);
+            if (recheck != LockDecision.Allowed)
+            {
+                outcome.Status = recheck == LockDecision.BookPrimaryProtected ? "protected" : "locked";
+                outcome.Detail = "changed while working: " + recheck;
+                Bump(s => s.SkippedLocked++);
+                continue;
+            }
+
             try
             {
                 await Writer.SaveAsync(item, slot, image, cancellationToken).ConfigureAwait(false);
@@ -768,6 +806,25 @@ public sealed class ArtworkRefreshService : IDisposable
         }
 
         return result;
+    }
+
+    private static bool OwnsCurrentImage(BaseItem item, ImageSlot slot, SlotState? state)
+    {
+        if (state?.Source != SourceIds.LocalMosaic || string.IsNullOrEmpty(state.ContentHash) || !item.HasImage(slot.Type, slot.Index))
+        {
+            return false;
+        }
+
+        try
+        {
+            var path = item.GetImageInfo(slot.Type, slot.Index)?.Path;
+            return !string.IsNullOrEmpty(path) && File.Exists(path)
+                   && string.Equals(Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path))), state.ContentHash, StringComparison.OrdinalIgnoreCase);
+        }
+        catch (IOException)
+        {
+            return false;
+        }
     }
 
     private ArtworkQuery BuildQuery(BaseItem item, BaseItemKind kind, ImageType[] types, RunContext context)
