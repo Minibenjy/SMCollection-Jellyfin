@@ -12,9 +12,9 @@
         "version": "0.1.4.0",
         "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
         "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.3.1/Jellyfin.Plugin.AiAssistant_0.1.4.0.zip",
-        "checksum": "4e9e12d94c8b9662e9dd40a5ef234b94",
-        "timestamp": "2026-10-02T22:21:25Z"
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.4.0/Jellyfin.Plugin.AiAssistant_0.1.4.0.zip",
+        "checksum": "46760e178c57ef2ee28e714fce3d0b50",
+        "timestamp": "2026-10-06T07:32:51Z"
       },
       {
         "version": "0.1.3.0",
@@ -51,6 +51,25 @@
     ]
   },
   {
+    "guid": "5ba2fb72-e545-4a44-89e1-a42b6e740208",
+    "name": "Artwork Refresher",
+    "description": "Refreshes artwork from public sources (TMDb, Fanart.tv, Wikimedia Commons, Open Library, Cover Art Archive, TheAudioDB, optional Google Programmable Search) on a schedule inside a time window, or for a single item from the card menu. Builds mosaics for genres, studios and collections from artwork already in the library. Never touches locked items, excluded libraries or book covers made by Auto Thumbnails.",
+    "overview": "Fresh posters, backdrops and category images on a schedule, or for one item from its card menu.",
+    "owner": "Minibenjy",
+    "category": "Metadata",
+    "imageUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/raw/main/docs/icons/Jellyfin.Plugin.ArtworkRefresher.png",
+    "versions": [
+      {
+        "version": "1.0.0.0",
+        "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.4.0/Jellyfin.Plugin.ArtworkRefresher_1.0.0.0.zip",
+        "checksum": "be713d64fc4b861327f8692b235846f9",
+        "timestamp": "2026-10-06T07:32:51Z"
+      }
+    ]
+  },
+  {
     "guid": "7c2b9e14-5a83-4d6f-9b21-3e8f4a0c6d75",
     "name": "Auto Thumbnails",
     "description": "Generates a thumbnail for items no scraper covered: the first page of a CBZ, CBR, CB7, CBT, PDF or EPUB, a video frame via ffmpeg, or the first child's image for a series, season or collection. Never overwrites artwork that already exists.",
@@ -63,9 +82,9 @@
         "version": "1.0.1.0",
         "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
         "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.3.1/Jellyfin.Plugin.AutoThumbnails_1.0.1.0.zip",
-        "checksum": "9aae399dd7a9188efb65b8dcfcb3ff3a",
-        "timestamp": "2026-10-02T22:21:25Z"
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.4.0/Jellyfin.Plugin.AutoThumbnails_1.0.1.0.zip",
+        "checksum": "2f6ab80235197f2b240f5338b37fd9cb",
+        "timestamp": "2026-10-06T07:32:51Z"
       },
       {
         "version": "1.0.0.0",
@@ -90,9 +109,9 @@
         "version": "0.2.6.0",
         "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
         "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.3.1/Jellyfin.Plugin.DiscoverHome_0.2.6.0.zip",
-        "checksum": "a86d5d9424272cff06a14e8a039617b5",
-        "timestamp": "2026-10-02T22:21:25Z"
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.4.0/Jellyfin.Plugin.DiscoverHome_0.2.6.0.zip",
+        "checksum": "a09a542cca0c1e4d377ac683f4fd58f7",
+        "timestamp": "2026-10-06T07:32:51Z"
       },
       {
         "version": "0.2.5.0",
@@ -189,9 +208,9 @@
         "version": "1.0.3.0",
         "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
         "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.3.1/Jellyfin.Plugin.EnhancedPdfReader_1.0.3.0.zip",
-        "checksum": "7fc0b86c1a1ba8fbfa8b76eca51c9b27",
-        "timestamp": "2026-10-02T22:21:25Z"
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.4.0/Jellyfin.Plugin.EnhancedPdfReader_1.0.3.0.zip",
+        "checksum": "1f1185efc8b6bb2d8cc44b5051b0ffdf",
+        "timestamp": "2026-10-06T07:32:51Z"
       },
       {
         "version": "1.0.2.0",
@@ -232,9 +251,9 @@
         "version": "0.1.4.0",
         "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
         "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.3.1/Jellyfin.Plugin.KidsMode_0.1.4.0.zip",
-        "checksum": "0646e296334317d301d09ed9ad780b8f",
-        "timestamp": "2026-10-02T22:21:25Z"
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.4.0/Jellyfin.Plugin.KidsMode_0.1.4.0.zip",
+        "checksum": "1abc615c0efac0caed9ef598576e4f40",
+        "timestamp": "2026-10-06T07:32:51Z"
       },
       {
         "version": "0.1.3.0",
@@ -283,9 +302,9 @@
         "version": "0.1.4.0",
         "changelog": "See https://github.com/Minibenjy/SMCollection-Jellyfin/blob/main/CHANGELOG.md",
         "targetAbi": "10.11.0.0",
-        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.3.1/Jellyfin.Plugin.MatureContent_0.1.4.0.zip",
-        "checksum": "bdc7b9ed9438a4bb6477a8e06f9aecc5",
-        "timestamp": "2026-10-02T22:21:25Z"
+        "sourceUrl": "https://github.com/Minibenjy/SMCollection-Jellyfin/releases/download/v1.4.0/Jellyfin.Plugin.MatureContent_0.1.4.0.zip",
+        "checksum": "ea31ec195ff8a48f016b0b7efe08dfba",
+        "timestamp": "2026-10-06T07:32:51Z"
       },
       {
         "version": "0.1.3.0",
