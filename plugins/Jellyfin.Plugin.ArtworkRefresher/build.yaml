@@ -1,14 +1,14 @@
 ---
 name: "Artwork Refresher"
 guid: "5ba2fb72-e545-4a44-89e1-a42b6e740208"
-version: "1.0.0.0"
+version: "1.1.0.0"
 targetAbi: "10.11.0.0"
 framework: "net9.0"
 owner: "Minibenjy"
 category: "Metadata"
 overview: "Fresh posters, backdrops and category images on a schedule, or for one item from its card menu."
 description: >
-  Refreshes artwork from public sources (TMDb, Fanart.tv, Wikimedia Commons,
+  Refreshes artwork, rotates it (pool of images, per page load or daily), fills new items and empty metadata from public sources (TMDb, Fanart.tv, Wikimedia Commons,
   Open Library, Cover Art Archive, TheAudioDB, optional Google Programmable
   Search) on a schedule inside a time window, or for a single item from the
   card menu. Builds mosaics for genres, studios and collections from artwork

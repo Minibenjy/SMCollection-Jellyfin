@@ -17,6 +17,36 @@ public enum ArtworkRefreshMode
 }
 
 /// <summary>
+/// How the image of a slot changes over time.
+/// </summary>
+public enum RotationMode
+{
+    /// <summary>The image does not rotate.</summary>
+    Off = 0,
+
+    /// <summary>A different image of the pool is served on every page load (the stored image is not touched).</summary>
+    PerLoad = 1,
+
+    /// <summary>The stored image changes once a day, during the scheduled pass.</summary>
+    Daily = 2
+}
+
+/// <summary>
+/// Rotation settings of one image type.
+/// </summary>
+public class RotationTypeSetting
+{
+    /// <summary>Gets or sets the image type name (Primary, Backdrop, Logo or Thumb).</summary>
+    public string ImageType { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the rotation mode.</summary>
+    public RotationMode Mode { get; set; }
+
+    /// <summary>Gets or sets how many candidate images the pool keeps. 0 means the default pool size.</summary>
+    public int PoolSize { get; set; }
+}
+
+/// <summary>
 /// Credentials and switches for one remote source.
 /// </summary>
 public class SourceSettings
@@ -250,6 +280,45 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>Gets or sets additional download hosts (only used when custom hosts are allowed).</summary>
     public string[] AdditionalAllowedHosts { get; set; } = [];
+
+    /// <summary>Gets or sets the rotation settings by image type. A type without an entry does not rotate.</summary>
+    public RotationTypeSetting[] Rotation { get; set; } = [];
+
+    /// <summary>Gets or sets the pool size used when a type does not say (2 to 20).</summary>
+    public int DefaultPoolSize { get; set; } = 5;
+
+    /// <summary>Gets or sets the days before a pool is searched again.</summary>
+    public int PoolRefreshDays { get; set; } = 30;
+
+    /// <summary>Gets or sets the most disk, in megabytes, the cached pool images may use.</summary>
+    public int PoolCacheMaxMegabytes { get; set; } = 1024;
+
+    /// <summary>Gets or sets a value indicating whether the image an item had before its first daily rotation is copied to the plugin data folder.</summary>
+    public bool BackupOriginalImages { get; set; } = true;
+
+    /// <summary>Gets or sets a value indicating whether recently added items go first in a run.</summary>
+    public bool PrioritizeRecentlyAdded { get; set; } = true;
+
+    /// <summary>Gets or sets how many days an item counts as recently added.</summary>
+    public int RecentlyAddedDays { get; set; } = 14;
+
+    /// <summary>Gets or sets a value indicating whether a new item is filled as soon as it is detected.</summary>
+    public bool FillNewItemsOnAdd { get; set; } = true;
+
+    /// <summary>Gets or sets a value indicating whether filling new items waits for the time window.</summary>
+    public bool NewItemsRespectWindow { get; set; } = true;
+
+    /// <summary>Gets or sets the seconds a new item waits before it is filled (Jellyfin does its own refresh first).</summary>
+    public int NewItemDelaySeconds { get; set; } = 120;
+
+    /// <summary>Gets or sets a value indicating whether empty metadata fields are filled from TMDb.</summary>
+    public bool FillMetadataGaps { get; set; }
+
+    /// <summary>Gets or sets the metadata fields that may be filled (Overview, Genres, ProductionYear, CommunityRating, Studios, Tagline). Empty means all.</summary>
+    public string[] MetadataFieldsToFill { get; set; } = [];
+
+    /// <summary>Gets or sets the book, comic and magazine libraries whose metadata may be filled. Empty means none.</summary>
+    public Guid[] MetadataBookLibraryOptIn { get; set; } = [];
 
     /// <summary>Gets or sets a value indicating whether the client script is added to the web client.</summary>
     public bool InjectClientScript { get; set; } = true;

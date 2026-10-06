@@ -5,6 +5,8 @@ await PolicyTests.RunAsync();
 await NetworkTests.RunAsync();
 await SourceParserTests.RunAsync();
 await ImageTests.RunAsync();
+await RotationTests.RunAsync();
+await MetadataTests.RunAsync();
 
 Console.WriteLine(Check.Passed + " checks passed, " + Check.Failed + " failed.");
 return Check.Failed == 0 ? 0 : 1;
