@@ -42,6 +42,7 @@ else can install them.
 | Plugin | What it does | Status |
 |---|---|---|
 | [AI Assistant](plugins/Jellyfin.Plugin.AiAssistant/) | A chat panel in the web client. Each user brings their own AI provider; the assistant searches, recommends from real metadata, and builds playlists strictly within that user's permissions. | Beta |
+| [Artwork Refresher](plugins/Jellyfin.Plugin.ArtworkRefresher/) | Fresh posters, backdrops and logos from public sources on a schedule (time window) or per item from the card menu; mosaics for genres, studios and collections. Respects locks, excluded libraries and book covers. | Release candidate (untested on a live server) |
 | [Auto Thumbnails](plugins/Jellyfin.Plugin.AutoThumbnails/) | Thumbnails for whatever no scraper covered — first page of a CBZ/CBR/PDF/EPUB, a video frame, a folder's first child. Never overwrites existing artwork. | Stable |
 | [Enhanced PDF Reader](plugins/Jellyfin.Plugin.EnhancedPdfReader/) | Replaces the minimal built-in PDF viewer with a real reader: scroll, zoom, go-to-page, rotate, page-flip book mode, and per-user reading position that feeds Continue Reading. | Stable |
 | [Kids Mode](plugins/Jellyfin.Plugin.KidsMode/) | Turns any account into a restricted allow-list view with one toggle, and restores the previous policy exactly when switched off. | Beta |
