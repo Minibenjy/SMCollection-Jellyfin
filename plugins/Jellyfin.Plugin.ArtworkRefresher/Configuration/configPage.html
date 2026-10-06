@@ -79,6 +79,55 @@
             </div>
 
             <div class="arCard">
+                <h3 style="margin-top:0">Rotating images</h3>
+                <div class="arNote">For each image type the plugin keeps a pool of candidate images per item (from the enabled sources) and varies what is shown. <strong>Per page load</strong>: every reload of the page shows another image of the pool; the image stored in Jellyfin is not changed (needs the client script below; it works on the standard Home rows such as Recently added, on detail pages and on any custom Home that shows ordinary item images). <strong>Once a day</strong>: the stored image changes during the scheduled run. A random image that was not shown yet is chosen, and none repeats until the pool is used up.</div>
+                <div class="arWarn">Daily rotation <em>replaces</em> the stored image of every unlocked item of that type (like Replace mode), so try it with Dry run first. Locks, excluded libraries and book covers are still respected. Rotation never runs while Dry run is on.</div>
+                <div id="arRotation">
+                    <div class="arGrid" data-rot="Primary"><div class="selectContainer"><label class="selectLabel">Poster / cover (Primary)</label><select is="emby-select" data-rotmode><option value="Off">Off</option><option value="PerLoad">Per page load</option><option value="Daily">Once a day</option></select></div><div class="inputContainer"><label class="inputLabel inputLabelUnfocused">Pool size (empty = default)</label><input is="emby-input" type="number" min="2" max="20" data-rotsize /></div></div>
+                    <div class="arGrid" data-rot="Backdrop"><div class="selectContainer"><label class="selectLabel">Backdrop</label><select is="emby-select" data-rotmode><option value="Off">Off</option><option value="PerLoad">Per page load</option><option value="Daily">Once a day</option></select></div><div class="inputContainer"><label class="inputLabel inputLabelUnfocused">Pool size (empty = default)</label><input is="emby-input" type="number" min="2" max="20" data-rotsize /></div></div>
+                    <div class="arGrid" data-rot="Logo"><div class="selectContainer"><label class="selectLabel">Logo</label><select is="emby-select" data-rotmode><option value="Off">Off</option><option value="PerLoad">Per page load</option><option value="Daily">Once a day</option></select></div><div class="inputContainer"><label class="inputLabel inputLabelUnfocused">Pool size (empty = default)</label><input is="emby-input" type="number" min="2" max="20" data-rotsize /></div></div>
+                    <div class="arGrid" data-rot="Thumb"><div class="selectContainer"><label class="selectLabel">Thumb</label><select is="emby-select" data-rotmode><option value="Off">Off</option><option value="PerLoad">Per page load</option><option value="Daily">Once a day</option></select></div><div class="inputContainer"><label class="inputLabel inputLabelUnfocused">Pool size (empty = default)</label><input is="emby-input" type="number" min="2" max="20" data-rotsize /></div></div>
+                </div>
+                <div class="arGrid">
+                    <div class="inputContainer"><label class="inputLabel inputLabelUnfocused" for="DefaultPoolSize">Default pool size (2-20)</label><input is="emby-input" type="number" id="DefaultPoolSize" min="2" max="20" /></div>
+                    <div class="inputContainer"><label class="inputLabel inputLabelUnfocused" for="PoolRefreshDays">Days before a pool is searched again</label><input is="emby-input" type="number" id="PoolRefreshDays" min="1" /></div>
+                    <div class="inputContainer"><label class="inputLabel inputLabelUnfocused" for="PoolCacheMaxMegabytes">Disk for cached pool images (MB)</label><input is="emby-input" type="number" id="PoolCacheMaxMegabytes" min="16" /></div>
+                </div>
+                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" id="BackupOriginalImages" /><span>Before the first daily rotation of an image, keep a copy of the image the item had (restore with POST ArtworkRefresher/Rotating/Restore/{itemId}/{type}, which also locks that image type of the item)</span></label></div>
+                <div class="arNote">A daily rotation only changes an image it wrote itself: if somebody replaces it afterwards, the rotation leaves it alone. Per page load, images are downloaded the first time they are shown and kept in the plugin's data folder up to the limit above (oldest deleted first). The run summary says how many images really changed by daily rotation.</div>
+            </div>
+
+            <div class="arCard">
+                <h3 style="margin-top:0">Recently added and new items</h3>
+                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" id="PrioritizeRecentlyAdded" /><span>Handle recently added items first in every run</span></label></div>
+                <div class="inputContainer"><label class="inputLabel inputLabelUnfocused" for="RecentlyAddedDays">Days an item counts as recently added</label><input is="emby-input" type="number" id="RecentlyAddedDays" min="1" /></div>
+                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" id="FillNewItemsOnAdd" /><span>Fill a new item as soon as the library adds it (artwork, and metadata gaps when enabled below)</span></label></div>
+                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" id="NewItemsRespectWindow" /><span>Only do that inside the time window (otherwise they wait in the queue until it opens)</span></label></div>
+                <div class="inputContainer"><label class="inputLabel inputLabelUnfocused" for="NewItemDelaySeconds">Seconds to wait after an item is added (Jellyfin does its own refresh first)</label><input is="emby-input" type="number" id="NewItemDelaySeconds" min="0" /></div>
+                <div class="arNote">This is what makes the "Recently added" rows of the standard Home and of custom Homes show real artwork soon after an item appears. The queue lives in memory: after a server restart the next scheduled run picks up items added in the last days.</div>
+            </div>
+
+            <div class="arCard">
+                <h3 style="margin-top:0">Fill missing metadata (TMDb)</h3>
+                <div class="arNote">Looks at movies, series, episodes and people with empty fields and fills <strong>only the empty ones</strong> from TMDb, by the TMDb or IMDb id the item already has (no name guessing). Existing values and fields locked in Jellyfin are never changed. Needs TMDb enabled with a key. Books, comics and magazines are never touched. Dry run lists what would be filled.</div>
+                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" id="FillMetadataGaps" /><span>Fill missing metadata in scheduled runs and for new items</span></label></div>
+                <div class="arGrid" id="arMetaFields">
+                    <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-mf="Overview" /><span>Overview (biography for people)</span></label></div>
+                    <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-mf="Genres" /><span>Genres</span></label></div>
+                    <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-mf="ProductionYear" /><span>Year</span></label></div>
+                    <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-mf="CommunityRating" /><span>Community rating</span></label></div>
+                    <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-mf="Studios" /><span>Studios / networks</span></label></div>
+                    <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-mf="Tagline" /><span>Tagline</span></label></div>
+                </div>
+                <div class="arNote">None ticked = all fields. The text uses the first preferred language (or the server metadata language); when TMDb has no text in that language the field stays empty.</div>
+                <div><strong>Book libraries that may be filled</strong> (opt-in; TMDb has no book data, so this only matters for future sources)<div class="arList" id="arBookOptIn"></div></div>
+                <div class="arActions" style="margin-top:1em">
+                    <button is="emby-button" type="button" id="arFillDry" class="raised"><span>Fill gaps: dry run</span></button>
+                    <button is="emby-button" type="button" id="arFillNow" class="raised"><span>Fill gaps now</span></button>
+                </div>
+            </div>
+
+            <div class="arCard">
                 <h3 style="margin-top:0">Libraries and protection</h3>
                 <div class="arNote">Excluded libraries are never touched. If you include some libraries, only those are refreshed (genres, studios and collections are not tied to a library).</div>
                 <div class="arGrid">
@@ -170,9 +219,11 @@
             var page = document.querySelector('#ArtworkRefresherPage');
             var cfg = null, libs = [], since = 0, timer = null;
             var SOURCES = ['Tmdb', 'Fanart', 'Wikimedia', 'OpenLibrary', 'CoverArtArchive', 'GoogleCse'];
-            var NUMS = ['RefreshIntervalHours', 'MaxRunMinutes', 'MinimumImageWidth', 'MinimumImageHeight', 'RetryAfterDays', 'MaximumSharedParentalRatingValue'];
+            var NUMS = ['RefreshIntervalHours', 'MaxRunMinutes', 'MinimumImageWidth', 'MinimumImageHeight', 'RetryAfterDays', 'MaximumSharedParentalRatingValue',
+                'DefaultPoolSize', 'PoolRefreshDays', 'PoolCacheMaxMegabytes', 'RecentlyAddedDays', 'NewItemDelaySeconds'];
             var BOOLS = ['Enabled', 'RefreshWindowEnabled', 'IncludePeople', 'DryRun', 'IncludeLanguageNeutralImages', 'RespectNativeLockData', 'ProtectBookPrimary', 'RespectAutoThumbnailsMarker',
-                'MosaicEnabled', 'SharedArtworkSafetyEnabled', 'ExcludeUnratedFromSharedArtwork', 'AllowNonAdminItemRefresh', 'InjectClientScript'];
+                'MosaicEnabled', 'SharedArtworkSafetyEnabled', 'ExcludeUnratedFromSharedArtwork', 'AllowNonAdminItemRefresh', 'InjectClientScript',
+                'PrioritizeRecentlyAdded', 'BackupOriginalImages', 'FillNewItemsOnAdd', 'NewItemsRespectWindow', 'FillMetadataGaps'];
             var TEXTS = ['RefreshWindowStart', 'RefreshWindowEnd', 'RefreshWindowTimeZone'];
 
             function $(id) { return page.querySelector('#' + id); }
@@ -214,7 +265,21 @@
                     });
                 });
                 $('GoogleSafeSearch').checked = !!cfg.Sources.GoogleSafeSearch;
+                renderRotation();
+                var mf = cfg.MetadataFieldsToFill || [];
+                [].forEach.call(page.querySelectorAll('#arMetaFields input'), function (i) { i.checked = mf.indexOf(i.getAttribute('data-mf')) >= 0; });
+                libList($('arBookOptIn'), cfg.MetadataBookLibraryOptIn);
                 renderLocks();
+            }
+
+            function renderRotation() {
+                var rot = cfg.Rotation || [];
+                [].forEach.call(page.querySelectorAll('#arRotation [data-rot]'), function (row) {
+                    var t = row.getAttribute('data-rot'), r = rot.filter(function (x) { return String(x.ImageType).toLowerCase() === t.toLowerCase(); })[0];
+                    var mode = r ? r.Mode : 'Off';
+                    row.querySelector('[data-rotmode]').value = mode === 1 ? 'PerLoad' : mode === 2 ? 'Daily' : (typeof mode === 'string' ? mode : 'Off');
+                    row.querySelector('[data-rotsize]').value = r && r.PoolSize > 0 ? r.PoolSize : '';
+                });
             }
 
             function renderLocks() {
@@ -244,6 +309,11 @@
                     });
                 });
                 c.Sources.GoogleSafeSearch = $('GoogleSafeSearch').checked;
+                c.Rotation = [].map.call(page.querySelectorAll('#arRotation [data-rot]'), function (row) {
+                    return { ImageType: row.getAttribute('data-rot'), Mode: row.querySelector('[data-rotmode]').value, PoolSize: parseInt(row.querySelector('[data-rotsize]').value, 10) || 0 };
+                }).filter(function (r) { return r.Mode !== 'Off'; });
+                c.MetadataFieldsToFill = [].filter.call(page.querySelectorAll('#arMetaFields input'), function (i) { return i.checked; }).map(function (i) { return i.getAttribute('data-mf'); });
+                c.MetadataBookLibraryOptIn = libPick($('arBookOptIn'));
                 return c;
             }
 
@@ -267,23 +337,27 @@
                     $('arBar').style.width = (s.Percent || 0) + '%';
                     var m = s.Summary || {};
                     $('arSummary').textContent = 'Scanned ' + m.Scanned + ', updated ' + m.Updated + ', no image found ' + m.NoCandidate + ', locked ' + m.SkippedLocked + ', protected ' + m.SkippedProtected + ', recent ' + m.SkippedFresh + ', rate limited ' + m.RateLimited + ', failed ' + m.Failed +
+                        (m.PoolsBuilt || m.RotationChanges || m.RotationDryRun ? '. Rotation: ' + (m.PoolsBuilt || 0) + ' pool(s) built, ' + (m.RotationChanges || 0) + ' image(s) changed' + (m.RotationDryRun ? ', ' + m.RotationDryRun + ' would change' : '') : '') +
+                        (m.MetadataItems || m.MetadataNoData ? '. Metadata: ' + (m.MetadataItems || 0) + ' item(s) (' + Object.keys(m.MetadataFilled || {}).map(function (k) { return k + ' ' + m.MetadataFilled[k]; }).join(', ') + '), no data for ' + (m.MetadataNoData || 0) : '') +
                         '. ' + Object.keys(s.Sources || {}).map(function (k) { var c = s.Sources[k]; return k + ': ' + c.Queries + ' queries, ' + c.Downloads + ' downloads, ' + c.TooManyRequests + ' x 429, ' + c.Failures + ' failures'; }).join('; ');
                     var log = $('arLog');
                     (s.Log || []).forEach(function (e) { var d = document.createElement('div'); d.className = e.Level; d.textContent = new Date(e.Timestamp + 'Z').toLocaleTimeString() + '  ' + e.Message; log.appendChild(d); });
                     if (s.Log && s.Log.length) { log.scrollTop = log.scrollHeight; }
                     since = s.LatestSequence || since;
-                    $('arRun').disabled = $('arDry').disabled = running; $('arCancel').disabled = !running;
+                    $('arRun').disabled = $('arDry').disabled = $('arFillDry').disabled = $('arFillNow').disabled = running; $('arCancel').disabled = !running;
                     timer = setTimeout(poll, running ? 1500 : 6000);
                 }, function () { timer = setTimeout(poll, 10000); });
             }
 
-            function start(dry) { $('arLog').innerHTML = ''; since = 0; call('POST', 'ArtworkRefresher/Run', { DryRun: dry }).then(poll, function () { Dashboard.alert('A run is already in progress.'); }); }
+            function start(dry, fill) { $('arLog').innerHTML = ''; since = 0; var body = { DryRun: dry }; if (fill) { body.FillMetadata = true; } call('POST', 'ArtworkRefresher/Run', body).then(poll, function () { Dashboard.alert('A run is already in progress.'); }); }
 
             page.addEventListener('click', function (e) {
                 var b = e.target.closest('button');
                 if (!b) { return; }
                 if (b.id === 'arRun') { start(false); }
                 else if (b.id === 'arDry') { start(true); }
+                else if (b.id === 'arFillDry') { start(true, true); }
+                else if (b.id === 'arFillNow') { start(false, true); }
                 else if (b.id === 'arCancel') { call('POST', 'ArtworkRefresher/Cancel').then(poll); }
                 else if (b.id === 'arLockAdd') {
                     var id = $('arLockId').value.trim();

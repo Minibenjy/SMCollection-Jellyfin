@@ -50,6 +50,24 @@ public sealed class RunSummary
 
     /// <summary>Gets or sets the slots that failed.</summary>
     public int Failed { get; set; }
+
+    /// <summary>Gets or sets the pools of candidate images built or refreshed.</summary>
+    public int PoolsBuilt { get; set; }
+
+    /// <summary>Gets or sets the images that really changed by daily rotation.</summary>
+    public int RotationChanges { get; set; }
+
+    /// <summary>Gets or sets the rotations a dry run would have made.</summary>
+    public int RotationDryRun { get; set; }
+
+    /// <summary>Gets or sets the items that had at least one metadata field filled (or would have, in a dry run).</summary>
+    public int MetadataItems { get; set; }
+
+    /// <summary>Gets or sets the metadata fields filled (or that a dry run would fill), by field.</summary>
+    public Dictionary<string, int> MetadataFilled { get; set; } = [];
+
+    /// <summary>Gets or sets the items with gaps that TMDb could not fill.</summary>
+    public int MetadataNoData { get; set; }
 }
 
 /// <summary>The state of the current or last run.</summary>
@@ -122,6 +140,9 @@ public sealed class RunRequest
 
     /// <summary>Gets or sets the library ids to limit the run to. Empty means the configured ones.</summary>
     public Guid[] LibraryIds { get; set; } = [];
+
+    /// <summary>Gets or sets a value indicating whether empty metadata fields are filled. Null uses the configuration.</summary>
+    public bool? FillMetadata { get; set; }
 }
 
 /// <summary>A request to refresh one item.</summary>

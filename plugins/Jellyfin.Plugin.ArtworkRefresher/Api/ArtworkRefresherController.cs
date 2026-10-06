@@ -33,8 +33,18 @@ public sealed class CapabilitiesResponse
     /// <summary>Gets or sets a value indicating whether the caller may refresh one item.</summary>
     public bool SupportsItemRefresh { get; set; }
 
+    /// <summary>Gets or sets the image types that rotate on every page load (the browser script rewrites those images).</summary>
+    public string[] RotationPerLoadTypes { get; set; } = [];
+
     /// <summary>Gets or sets the optional integrations found (administrators only).</summary>
     public Dictionary<string, bool>? Integrations { get; set; }
+}
+
+/// <summary>The item ids the browser asks about.</summary>
+public sealed class RotatingAvailableRequest
+{
+    /// <summary>Gets or sets the item ids.</summary>
+    public string[] Ids { get; set; } = [];
 }
 
 /// <summary>The configuration page's view of the settings.</summary>
@@ -118,6 +128,7 @@ public class ArtworkRefresherController : ControllerBase
             IsAdmin = isAdmin,
             PluginVersion = typeof(Plugin).Assembly.GetName().Version?.ToString() ?? string.Empty,
             SupportsItemRefresh = isAdmin || Plugin.Config.AllowNonAdminItemRefresh,
+            RotationPerLoadTypes = Plugin.Config.Enabled && !Plugin.Config.DryRun ? RotationPolicy.PerLoadTypes(Plugin.Config) : [],
             Integrations = isAdmin ? _detector.Detect().ToDictionary(k => k.Key, k => k.Value) : null
         });
     }
@@ -184,7 +195,8 @@ public class ArtworkRefresherController : ControllerBase
             Scheduled = false,
             DryRun = request?.DryRun,
             Mode = request?.Mode,
-            LibraryIds = request?.LibraryIds ?? []
+            LibraryIds = request?.LibraryIds ?? [],
+            FillMetadata = request?.FillMetadata
         })
             ? Ok(_service.GetStatus(0))
             : Conflict();
@@ -260,6 +272,87 @@ public class ArtworkRefresherController : ControllerBase
         }
 
         return Ok(await _service.RefreshItemAsync(item, request, cancellationToken).ConfigureAwait(false));
+    }
+
+    /// <summary>
+    /// Serves one image of the pool of an item, a different one on each page view (rotation per page load).
+    /// The address carries a signed token handed out by the authenticated "available" call, because an
+    /// img tag cannot send a header: the token authorises one item and type for two hours, so item ids
+    /// cannot be guessed and anonymous visitors cannot make the server download anything.
+    /// </summary>
+    /// <param name="id">The item id.</param>
+    /// <param name="type">The image type.</param>
+    /// <param name="s">The signed token.</param>
+    /// <param name="n">An id of the page view; the same id always gets the same image.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <response code="200">The image.</response>
+    /// <response code="404">This slot does not rotate or the token is wrong; keep the normal image.</response>
+    /// <returns>The image.</returns>
+    [HttpGet("Rotating/{id}/{type}")]
+    [AllowAnonymous]
+    [Produces("image/jpeg", "image/png", "image/webp")]
+    public async Task<ActionResult> GetRotatingImage([FromRoute] Guid id, [FromRoute] string type, [FromQuery] string? s, [FromQuery] string? n, CancellationToken cancellationToken)
+    {
+        if (!Enum.TryParse<MediaBrowser.Model.Entities.ImageType>(type, true, out var imageType)
+            || imageType is not (MediaBrowser.Model.Entities.ImageType.Primary or MediaBrowser.Model.Entities.ImageType.Backdrop
+                or MediaBrowser.Model.Entities.ImageType.Logo or MediaBrowser.Model.Entities.ImageType.Thumb))
+        {
+            return NotFound();
+        }
+
+        var image = await _service.ServeRotatingAsync(id, imageType, s, n, cancellationToken).ConfigureAwait(false);
+        if (image is null)
+        {
+            return NotFound();
+        }
+
+        // Private and short: the preload and the display of this page view share it, the next page view has another n.
+        Response.Headers.CacheControl = "private, max-age=300";
+        return PhysicalFile(image.Path, image.MimeType);
+    }
+
+    /// <summary>Tells which of the given items have rotating images and signs their addresses.</summary>
+    /// <param name="request">The item ids.</param>
+    /// <response code="200">The keys (id:Type with the id as 32 hex digits) and their tokens.</response>
+    /// <returns>The keys and tokens.</returns>
+    [HttpPost("Rotating/Available")]
+    [Authorize]
+    public async Task<ActionResult> GetRotatingAvailable([FromBody] RotatingAvailableRequest? request)
+    {
+        var (user, isAdmin) = await CallerAsync().ConfigureAwait(false);
+        if (user is null && !isAdmin)
+        {
+            return Unauthorized();
+        }
+
+        var ids = (request?.Ids ?? []).Select(s => Guid.TryParse(s, out var g) ? g : Guid.Empty).Where(g => g != Guid.Empty).Distinct().Take(300).ToList();
+        if (!isAdmin && user is not null)
+        {
+            // Only items this user can see.
+            ids = ids.Where(i => _libraryManager.GetItemById<BaseItem>(i, user) is not null).ToList();
+        }
+
+        return Ok(new { keys = _service.RotatableTokens(ids) });
+    }
+
+    /// <summary>Puts back the image an item had before the first daily rotation and locks that image type of the item.</summary>
+    /// <param name="id">The item id.</param>
+    /// <param name="type">The image type.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <response code="204">Restored.</response>
+    /// <response code="404">No such item, or no backup of that image.</response>
+    /// <returns>No content.</returns>
+    [HttpPost("Rotating/Restore/{id}/{type}")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    public async Task<ActionResult> RestoreOriginal([FromRoute] Guid id, [FromRoute] string type, CancellationToken cancellationToken)
+    {
+        var item = _libraryManager.GetItemById(id);
+        if (item is null || !Enum.TryParse<MediaBrowser.Model.Entities.ImageType>(type, true, out var imageType))
+        {
+            return NotFound();
+        }
+
+        return await _service.RestoreOriginalAsync(item, imageType, cancellationToken).ConfigureAwait(false) ? NoContent() : NotFound();
     }
 
     /// <summary>Lists the image locks.</summary>
@@ -410,6 +503,27 @@ public class ArtworkRefresherController : ControllerBase
         c.NonAdminRefreshCooldownMinutes = Math.Clamp(c.NonAdminRefreshCooldownMinutes, 0, 24 * 60);
         c.MosaicRotationDays = Math.Clamp(c.MosaicRotationDays, 1, 365);
         c.RetryAfterDays = Math.Clamp(c.RetryAfterDays, 1, 365);
+        c.DefaultPoolSize = Math.Clamp(c.DefaultPoolSize, RotationPolicy.MinPool, RotationPolicy.MaxPool);
+        c.PoolRefreshDays = Math.Clamp(c.PoolRefreshDays, 1, 365);
+        c.PoolCacheMaxMegabytes = Math.Clamp(c.PoolCacheMaxMegabytes, 16, 102400);
+        c.RecentlyAddedDays = Math.Clamp(c.RecentlyAddedDays, 1, 365);
+        c.NewItemDelaySeconds = Math.Clamp(c.NewItemDelaySeconds, 0, 3600);
+        c.Rotation = (c.Rotation ?? [])
+            .Where(r => Enum.TryParse<MediaBrowser.Model.Entities.ImageType>(r.ImageType, true, out var t)
+                        && t is MediaBrowser.Model.Entities.ImageType.Primary or MediaBrowser.Model.Entities.ImageType.Backdrop
+                            or MediaBrowser.Model.Entities.ImageType.Logo or MediaBrowser.Model.Entities.ImageType.Thumb)
+            .GroupBy(r => r.ImageType, StringComparer.OrdinalIgnoreCase)
+            .Select(g => g.Last())
+            .ToArray();
+        foreach (var r in c.Rotation)
+        {
+            r.PoolSize = r.PoolSize <= 0 ? 0 : Math.Clamp(r.PoolSize, RotationPolicy.MinPool, RotationPolicy.MaxPool);
+        }
+
+        c.MetadataFieldsToFill = (c.MetadataFieldsToFill ?? [])
+            .Where(f => MetadataGapPolicy.AllFields.Contains(f, StringComparer.OrdinalIgnoreCase))
+            .ToArray();
+        c.MetadataBookLibraryOptIn ??= [];
         c.EnabledImageTypes ??= [];
         c.IncludedLibraryIds ??= [];
         c.ExcludedLibraryIds ??= [];

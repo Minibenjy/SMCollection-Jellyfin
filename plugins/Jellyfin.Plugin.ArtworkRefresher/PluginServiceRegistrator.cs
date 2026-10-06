@@ -18,6 +18,7 @@ public class PluginServiceRegistrator : IPluginServiceRegistrator
         serviceCollection.AddSingleton<ArtworkRefreshService>();
         serviceCollection.AddSingleton<OptionalIntegrationDetector>();
         serviceCollection.AddSingleton<HomeArtworkService>();
+        serviceCollection.AddHostedService<NewItemsHostedService>();
         serviceCollection.AddHostedService<ScriptInjectionHostedService>();
         serviceCollection.AddHostedService<FileTransformationFallbackHostedService>();
     }

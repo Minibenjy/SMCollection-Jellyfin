@@ -29,7 +29,7 @@ namespace Jellyfin.Plugin.ArtworkRefresher.Services;
 /// Runs artwork refreshes: the scheduled sweep, the manual run and the single-item refresh all go
 /// through the same pipeline (candidates, lock policy, download, validation, save).
 /// </summary>
-public sealed class ArtworkRefreshService : IDisposable
+public sealed partial class ArtworkRefreshService : IDisposable
 {
     private const int MaxLogEntries = 500;
     private const string AutoThumbnailsMarker = "AutoThumbnails";
@@ -242,6 +242,8 @@ public sealed class ArtworkRefreshService : IDisposable
             {
                 d.Scheduler.LastRunCompletedUtc = completed;
                 d.Scheduler.LastRunStatus = partial ? "partial" : "completed";
+                d.Scheduler.LastRunRotationChanges = _summary.RotationChanges;
+                d.Scheduler.LastRunMetadataFilled = new Dictionary<string, int>(_summary.MetadataFilled);
                 d.Scheduler.NextEligibleRunUtc = partial ? completed : completed.AddHours(Math.Max(1, configuration.RefreshIntervalHours));
             });
         }
@@ -263,7 +265,7 @@ public sealed class ArtworkRefreshService : IDisposable
         {
             try
             {
-                await State.SaveAsync().ConfigureAwait(false);
+                await State.SaveAsync(true).ConfigureAwait(false);
             }
             catch (IOException ex)
             {
@@ -344,7 +346,8 @@ public sealed class ArtworkRefreshService : IDisposable
             Mode = request.Mode ?? configuration.RefreshMode,
             Force = false,
             DryRun = request.DryRun ?? configuration.DryRun,
-            Scheduled = request.Scheduled
+            Scheduled = request.Scheduled,
+            FillMetadata = request.FillMetadata ?? configuration.FillMetadataGaps
         };
 
         SetPhase("Looking for items…");
@@ -382,6 +385,30 @@ public sealed class ArtworkRefreshService : IDisposable
             }
         }
 
+        if (configuration.PrioritizeRecentlyAdded)
+        {
+            // Items added lately go first, so a new series is filled before the old library is revisited.
+            var cutoff = DateTime.UtcNow.AddDays(-Math.Max(1, configuration.RecentlyAddedDays));
+            var recent = new List<BaseItem>();
+            for (var i = 0; i < passes.Count; i++)
+            {
+                if (passes[i].Label is not ("Movies and shows" or "Music" or "Collections"))
+                {
+                    continue;
+                }
+
+                var (fresh, rest) = RecentFirstPolicy.Split(passes[i].Items, x => x.DateCreated, cutoff);
+                recent.AddRange(fresh);
+                passes[i] = (passes[i].Label, rest);
+            }
+
+            passes.RemoveAll(p => p.Items.Count == 0);
+            if (recent.Count > 0)
+            {
+                passes.Insert(0, ("Recently added", recent.OrderByDescending(x => x.DateCreated).ToList()));
+            }
+        }
+
         var total = passes.Sum(p => p.Items.Count);
         SetTotal(total);
         Append("info", string.Format(CultureInfo.CurrentCulture, "{0} item(s) to look at{1}.", total, options.DryRun ? " (dry run: nothing is saved)" : string.Empty));
@@ -412,6 +439,8 @@ public sealed class ArtworkRefreshService : IDisposable
                     {
                         Append("error", item.Name + " — " + s.Slot + ": " + s.Detail);
                     }
+
+                    await RunExtrasAsync(item, options, context, cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -446,6 +475,22 @@ public sealed class ArtworkRefreshService : IDisposable
             sum.SkippedFresh,
             sum.RateLimited,
             sum.Failed));
+        if (RotationPolicy.AnyEnabled(configuration))
+        {
+            Append("info", string.Format(CultureInfo.CurrentCulture, "Rotation: {0} pool(s) built, {1} image(s) changed{2}.", sum.PoolsBuilt, sum.RotationChanges, options.DryRun ? string.Format(CultureInfo.CurrentCulture, " ({0} would change)", sum.RotationDryRun) : string.Empty));
+        }
+
+        if (options.FillMetadata)
+        {
+            Append("info", string.Format(
+                CultureInfo.CurrentCulture,
+                "Metadata gaps{0}: {1} item(s), {2}; no data for {3} item(s).",
+                options.DryRun ? " (dry run: nothing saved)" : string.Empty,
+                sum.MetadataItems,
+                sum.MetadataFilled.Count == 0 ? "no field" : string.Join(", ", sum.MetadataFilled.Select(kv => kv.Key + " " + kv.Value)),
+                sum.MetadataNoData));
+        }
+
         SetPhase(string.Empty);
         progress?.Report(100);
         return false;
@@ -486,20 +531,23 @@ public sealed class ArtworkRefreshService : IDisposable
         return string.IsNullOrWhiteSpace(server) ? [] : [server];
     }
 
-    private async Task<ItemRefreshResult> ProcessItemAsync(BaseItem item, ProcessOptions options, RunContext context, CancellationToken cancellationToken)
+    private Task<ItemRefreshResult> ProcessItemAsync(BaseItem item, ProcessOptions options, RunContext context, CancellationToken cancellationToken)
+        => WithItemLockAsync(item.Id, () => ProcessItemCoreAsync(item, options, context, cancellationToken), cancellationToken);
+
+    private async Task<T> WithItemLockAsync<T>(Guid id, Func<Task<T>> work, CancellationToken cancellationToken)
     {
-        var sem = _itemLocks.GetOrAdd(item.Id, _ => new SemaphoreSlim(1, 1));
+        var sem = _itemLocks.GetOrAdd(id, _ => new SemaphoreSlim(1, 1));
         await sem.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            return await ProcessItemCoreAsync(item, options, context, cancellationToken).ConfigureAwait(false);
+            return await work().ConfigureAwait(false);
         }
         finally
         {
             sem.Release();
             if (sem.CurrentCount == 1)
             {
-                _itemLocks.TryRemove(item.Id, out _);
+                _itemLocks.TryRemove(id, out _);
             }
         }
     }
@@ -586,42 +634,8 @@ public sealed class ArtworkRefreshService : IDisposable
         Bump(s => s.Eligible++);
 
         var query = BuildQuery(item, kind, allowed.Select(s => s.Type).ToArray(), context);
-        var remote = new Dictionary<ImageType, List<ArtworkCandidate>>();
         var rateBefore = TooManyRequests();
-
-        foreach (var sourceId in SourceSelector.Select(configuration, kind))
-        {
-            if (sourceId == SourceIds.LocalMosaic)
-            {
-                continue;
-            }
-
-            // Enough candidates to try (a found candidate is not yet a usable image): stop asking more sources.
-            if (allowed.All(s => remote.TryGetValue(s.Type, out var l) && l.Count >= MaxAttemptsPerSlot))
-            {
-                break;
-            }
-
-            var source = Sources.FirstOrDefault(s => s.Id == sourceId);
-            if (source is null)
-            {
-                continue;
-            }
-
-            var found = await source.FindAsync(query, Http, configuration, cancellationToken).ConfigureAwait(false);
-            foreach (var c in found.Where(c => allowed.Any(s => s.Type == c.ImageType)))
-            {
-                if (!remote.TryGetValue(c.ImageType, out var list))
-                {
-                    list = [];
-                    remote[c.ImageType] = list;
-                }
-
-                // Sources are asked in the configured order and each answers best first, so appending keeps
-                // the priority: a later source is a real fallback when the earlier images fail to download.
-                list.Add(c);
-            }
-        }
+        var remote = await GatherCandidatesAsync(query, kind, allowed.Select(s => s.Type).ToArray(), configuration, MaxAttemptsPerSlot, cancellationToken).ConfigureAwait(false);
 
         foreach (var slot in allowed)
         {
@@ -806,6 +820,52 @@ public sealed class ArtworkRefreshService : IDisposable
         }
 
         return result;
+    }
+
+    private async Task<Dictionary<ImageType, List<ArtworkCandidate>>> GatherCandidatesAsync(
+        ArtworkQuery query,
+        BaseItemKind kind,
+        IReadOnlyCollection<ImageType> types,
+        PluginConfiguration configuration,
+        int target,
+        CancellationToken cancellationToken)
+    {
+        var remote = new Dictionary<ImageType, List<ArtworkCandidate>>();
+        foreach (var sourceId in SourceSelector.Select(configuration, kind))
+        {
+            if (sourceId == SourceIds.LocalMosaic)
+            {
+                continue;
+            }
+
+            // Enough candidates to try (a found candidate is not yet a usable image): stop asking more sources.
+            if (types.All(t => remote.TryGetValue(t, out var l) && l.Count >= target))
+            {
+                break;
+            }
+
+            var source = Sources.FirstOrDefault(s => s.Id == sourceId);
+            if (source is null)
+            {
+                continue;
+            }
+
+            var found = await source.FindAsync(query, Http, configuration, cancellationToken).ConfigureAwait(false);
+            foreach (var c in found.Where(c => types.Contains(c.ImageType)))
+            {
+                if (!remote.TryGetValue(c.ImageType, out var list))
+                {
+                    list = [];
+                    remote[c.ImageType] = list;
+                }
+
+                // Sources are asked in the configured order and each answers best first, so appending keeps
+                // the priority: a later source is a real fallback when the earlier images fail to download.
+                list.Add(c);
+            }
+        }
+
+        return remote;
     }
 
     private static bool OwnsCurrentImage(BaseItem item, ImageSlot slot, SlotState? state)
@@ -1056,6 +1116,8 @@ public sealed class ArtworkRefreshService : IDisposable
         public bool OverrideExcludedLibraries { get; init; }
 
         public ImageType[]? Wanted { get; init; }
+
+        public bool FillMetadata { get; init; }
     }
 }
 

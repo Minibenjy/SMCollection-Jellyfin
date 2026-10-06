@@ -224,6 +224,154 @@
         });
     }
 
+    // ------------------------------------------------- rotation per page load
+    //
+    // When the administrator sets an image type to "per page load", the server keeps a pool of images for each
+    // item and serves a different one from GET ArtworkRefresher/Rotating/{id}/{type}. Here we only swap the
+    // address of card and detail-page images that point at /Items/{id}/Images/{type}: standard Jellyfin rows
+    // ("Recently added" included), the item page, and any custom Home that renders ordinary cards or images.
+    // No other plugin is needed or read. If the server has nothing for an item the original image stays.
+
+    var IMAGE_URL = /\/Items\/([0-9a-fA-F]{32}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\/Images\/(Primary|Backdrop|Logo|Thumb)(?:\/0)?(?:[?#]|$)/;
+    var AVAILABLE_TTL_MS = 60000;
+    var SCAN_DELAY_MS = 150;
+    var MAX_IDS_PER_CALL = 100;
+
+    var availableAt = {};     // id -> time it was last asked about
+    var availableKeys = {};   // "id:Type" -> true when the server can rotate it
+    var pendingNodes = [];
+    var scanTimer = null;
+    var capsFailedAt = 0;
+
+    function cleanUrl(text) {
+        if (!text) { return null; }
+        var m = /url\((['"]?)(.*?)\1\)/.exec(text);
+        return m ? m[2] : text;
+    }
+
+    function parseTarget(url) {
+        var m = url ? IMAGE_URL.exec(url) : null;
+        return m ? { id: m[1].replace(/-/g, '').toLowerCase(), type: m[2] } : null;
+    }
+
+    function elementUrl(el) {
+        if (!el.tagName) { return null; }
+        if (el.tagName === 'IMG') { return el.getAttribute('src'); }
+        return cleanUrl(el.style && el.style.backgroundImage);
+    }
+
+    function isOurs(url) { return !!url && url.indexOf('ArtworkRefresher/Rotating/') >= 0; }
+
+    function gather(node, out) {
+        if (!node || node.nodeType !== 1) { return; }
+        var list = [node];
+        if (node.querySelectorAll) {
+            Array.prototype.push.apply(list, node.querySelectorAll('[style*="/Images/"], img[src*="/Images/"]'));
+        }
+        list.forEach(function (el) {
+            var url = elementUrl(el);
+            if (!url || isOurs(url) || el.getAttribute('data-arf-orig') === url) { return; }
+            var target = parseTarget(url);
+            if (target) { out.push({ el: el, url: url, id: target.id, type: target.type }); }
+        });
+    }
+
+    function swap(job) {
+        var client = api();
+        if (!client) { return; }
+        // One address per page view: the signed token says the server may serve it, the nonce makes the preload
+        // and the display get the same image (the server remembers the draw for a few minutes).
+        var nonce = Date.now().toString(36) + Math.floor(Math.random() * 1e9).toString(36);
+        var next = client.getUrl('ArtworkRefresher/Rotating/' + job.id + '/' + job.type) + '?s=' + encodeURIComponent(availableKeys[job.id + ':' + job.type]) + '&n=' + nonce;
+        job.el.setAttribute('data-arf-orig', job.url);
+        // Load first: if the server answers 404 the card keeps its normal image and never flickers.
+        var probe = new Image();
+        probe.onload = function () {
+            if (job.el.getAttribute('data-arf-orig') !== job.url) { return; }
+            if (job.el.tagName === 'IMG') {
+                job.el.removeAttribute('srcset');
+                job.el.setAttribute('src', next);
+            } else {
+                job.el.style.backgroundImage = 'url("' + next + '")';
+            }
+        };
+        probe.onerror = function () { delete availableKeys[job.id + ':' + job.type]; };
+        probe.src = next;
+    }
+
+    function runScan() {
+        scanTimer = null;
+        var nodes = pendingNodes;
+        pendingNodes = [];
+        var jobs = [];
+        nodes.forEach(function (n) { gather(n, jobs); });
+        // The same element can arrive through several records (a node and its parent): swap it once.
+        jobs = jobs.filter(function (j, i) { return jobs.findIndex(function (k) { return k.el === j.el; }) === i; });
+        if (!jobs.length) { return Promise.resolve(0); }
+
+        if (capsFailedAt && Date.now() - capsFailedAt < 15000) { return Promise.resolve(0); }
+        return getCapabilities().then(function (caps) {
+            var types = (caps && caps.RotationPerLoadTypes) || [];
+            if (!caps || !types.length) {
+                if (!caps) { capsFailedAt = Date.now(); }
+                return 0;
+            }
+            jobs = jobs.filter(function (j) { return types.indexOf(j.type) >= 0; });
+            var now = Date.now();
+            var ask = [];
+            jobs.forEach(function (j) {
+                if ((!availableAt[j.id] || now - availableAt[j.id] > AVAILABLE_TTL_MS) && ask.indexOf(j.id) < 0) { ask.push(j.id); }
+            });
+            var calls = [];
+            for (var i = 0; i < ask.length; i += MAX_IDS_PER_CALL) {
+                (function (chunk) {
+                    chunk.forEach(function (id) { availableAt[id] = now; });
+                    calls.push(call('POST', 'ArtworkRefresher/Rotating/Available', { Ids: chunk }).then(function (r) {
+                        chunk.forEach(function (id) { types.forEach(function (t) { delete availableKeys[id + ':' + t]; }); });
+                        var keys = (r && r.keys) || {};
+                        Object.keys(keys).forEach(function (k) { availableKeys[k] = keys[k]; });
+                    }, function () { chunk.forEach(function (id) { delete availableAt[id]; }); }));
+                })(ask.slice(i, i + MAX_IDS_PER_CALL));
+            }
+            return Promise.all(calls).then(function () {
+                var done = 0;
+                jobs.forEach(function (j) {
+                    if (availableKeys[j.id + ':' + j.type]) { swap(j); done++; }
+                });
+                return done;
+            });
+        });
+    }
+
+    function schedule(node) {
+        if (!node) { return; }
+        pendingNodes.push(node);
+        if (!scanTimer) { scanTimer = setTimeout(runScan, SCAN_DELAY_MS); }
+    }
+
+    function startRotation() {
+        schedule(document.body);
+        var observer = new MutationObserver(function (records) {
+            records.forEach(function (record) {
+                if (record.type === 'attributes') {
+                    // Cheap test first: carousels change style all the time, only image addresses matter.
+                    var url = elementUrl(record.target);
+                    if (url && url.indexOf('/Images/') >= 0 && !isOurs(url)) { schedule(record.target); }
+                    return;
+                }
+                Array.prototype.forEach.call(record.addedNodes, schedule);
+            });
+        });
+        observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'src'] });
+    }
+
+    // Exposed so the page logic can be exercised without a browser (tests/js).
+    window.__artworkRefresherRotation = {
+        parseTarget: parseTarget,
+        scanNow: function (node) { pendingNodes.push(node); return runScan(); },
+        reset: function () { availableAt = {}; availableKeys = {}; capabilities = null; capsFailedAt = 0; }
+    };
+
     // ------------------------------------------------------------ bootstrap
 
     function start() {
@@ -243,6 +391,8 @@
             });
         });
         observer.observe(document.body, { childList: true });
+
+        startRotation();
     }
 
     if (document.body) { start(); }
